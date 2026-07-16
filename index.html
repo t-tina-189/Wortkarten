@@ -82,8 +82,6 @@
   .del-btn:hover { color: #C1443B; }
   .empty-state { text-align: center; padding: 2.5rem 1rem; color: #8A8980; font-size: 14px; }
 
-  .quiz-photo-wrap { text-align: center; margin-bottom: 0.8rem; }
-  .quiz-photo-wrap img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; }
   .quiz-photo-frame { position: relative; margin-bottom: 0.8rem; }
   .quiz-photo-frame img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; display: block; }
   .star-badge-lg { position: absolute; bottom: 10px; right: 10px; background: #1C1B19; color: #FAEEDA; font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 8px; letter-spacing: 0.02em; }
@@ -119,6 +117,7 @@
   .home-status { margin: 8px 0 0; font-size: 13.5px; color: #6B6A63; }
   .home-streak { margin: 6px 0 0; font-size: 14px; color: #232220; font-weight: 600; }
   .home-encouragement { margin: 6px 0 0; font-size: 13.5px; font-style: italic; font-weight: 700; color: #3A3934; }
+  .hub-header { padding: 0.5rem 0 1.5rem; text-align: center; }
   .menu-stack { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
   .pill { position: relative; width: 100%; max-width: 300px; background: #FFFFFF; border: 1px solid #DEDDD3; border-radius: 999px; padding: 15px 1rem; text-align: center; cursor: pointer; font-size: 15px; font-weight: 500; }
   .due-badge { position: absolute; bottom: -6px; right: 10px; background: #1C1B19; color: #FAEEDA; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; display: none; }
@@ -151,6 +150,13 @@
   .chip-missing { background: #FCEBEB; color: #791F1F; }
   .chip-extra { background: #FAEEDA; color: #633806; }
   .manage-link { text-align: center; font-size: 12.5px; color: #8A8980; padding: 12px 0 0; cursor: pointer; }
+
+  .spell-input-wrap { text-align: center; margin-bottom: 0.5rem; }
+  .spell-input-wrap input { max-width: 260px; margin: 0 auto 0; letter-spacing: 0.05em; }
+  .spell-boxes { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 10px 0 1rem; }
+  .spell-box { width: 32px; height: 40px; border: 1.5px solid #D5D4C9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 17px; background: #FAF9F4; text-transform: lowercase; }
+  .spell-box.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .spell-box.wrong { background: #FCEBEB; border-color: #E24B4A; color: #791F1F; }
 </style>
 </head>
 <body>
@@ -168,22 +174,43 @@
   <div class="screen" id="screen-home">
     <div class="home-header">
       <h1 id="homeGreeting">Hello</h1>
-      <p class="home-streak" id="homeStreak"></p>
-      <p class="home-status" id="homeStatus"></p>
       <p class="home-encouragement" id="homeEncouragement"></p>
     </div>
     <div class="menu-stack">
-      <div class="pill" data-go="add">Add words</div>
-      <div class="pill" data-go="practice">Practice now<span class="due-badge" id="dueBadge"></span></div>
-      <div class="pill" data-go="produce">Produce it</div>
-      <div class="pill" data-go="list">My words</div>
-      <div class="pill" data-go="stats">Stats</div>
+      <div class="pill" data-go="vocab-hub">Vocabulary<span class="due-badge" id="vocabDueBadge"></span></div>
+      <div class="pill" data-go="sentence-hub">Sentence</div>
     </div>
     <div class="settings-link" id="goSettings">Settings</div>
   </div>
 
-  <div class="screen" id="screen-add">
+  <div class="screen" id="screen-vocab-hub">
     <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
+    <div class="hub-header">
+      <p class="home-streak" id="vocabStreakLine"></p>
+      <p class="home-status" id="vocabStatusLine"></p>
+    </div>
+    <div class="menu-stack">
+      <div class="pill" data-go="add">New words</div>
+      <div class="pill" data-go="practice">Artikel test<span class="due-badge" id="dueBadge"></span></div>
+      <div class="pill" data-go="spelling">Spelling bee</div>
+      <div class="pill" data-go="list">Word bank</div>
+      <div class="pill" data-go="stats">Stats</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-sentence-hub">
+    <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
+    <div class="hub-header">
+      <p class="home-streak" id="sentenceStreakLine"></p>
+    </div>
+    <div class="menu-stack">
+      <div class="pill" data-go="produce">English → German</div>
+      <div class="pill" data-go="stats-sentence">Stats</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-add">
+    <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
     <div class="card">
       <label class="field-label">Photo</label>
       <div class="photo-input-area" id="photoArea">
@@ -223,23 +250,28 @@
   </div>
 
   <div class="screen" id="screen-practice">
-    <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
+    <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
     <div id="practiceArea"></div>
   </div>
 
+  <div class="screen" id="screen-spelling">
+    <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
+    <div id="spellingArea"></div>
+  </div>
+
   <div class="screen" id="screen-produce">
-    <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
+    <div class="back-row"><button class="back-btn" data-go="sentence-hub">← Back</button></div>
     <div id="produceArea"></div>
   </div>
 
   <div class="screen" id="screen-list">
-    <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
+    <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
     <p class="list-count" id="listCount"></p>
     <div class="card" id="listCard"><div class="empty-state">Loading…</div></div>
   </div>
 
   <div class="screen" id="screen-stats">
-    <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
+    <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
     <div class="card">
       <div class="streak-hero"><div class="num" id="streakNum">0 🔥</div><div class="lbl">day streak</div></div>
       <div class="summary-stat"><span class="lbl">Best streak</span><span class="val" id="bestStreakVal">0</span></div>
@@ -249,6 +281,20 @@
     <div class="card" id="lastSessionCard" style="display:none;">
       <label class="field-label">Last session</label>
       <div id="lastSessionBody"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-stats-sentence">
+    <div class="back-row"><button class="back-btn" data-go="sentence-hub">← Back</button></div>
+    <div class="card">
+      <div class="streak-hero"><div class="num" id="streakNumSentence">0 🔥</div><div class="lbl">day streak</div></div>
+      <div class="summary-stat"><span class="lbl">Best streak</span><span class="val" id="bestStreakValSentence">0</span></div>
+      <div class="summary-stat"><span class="lbl">Sentences in bank</span><span class="val" id="totalSentencesVal">0</span></div>
+      <div class="summary-stat"><span class="lbl">Checked (all time)</span><span class="val" id="totalReviewsValSentence">0</span></div>
+    </div>
+    <div class="card" id="lastSessionCardSentence" style="display:none;">
+      <label class="field-label">Last check</label>
+      <div id="lastSessionBodySentence"></div>
     </div>
   </div>
 
@@ -284,7 +330,6 @@
   </div>
 
 </div>
-
 <script>
 const DECL = {
   masc: { nom: 'der', akk: 'den', dat: 'dem', gen: 'des' },
@@ -361,7 +406,7 @@ const GLOSS = {
   der: 'the', die: 'the', das: 'the / that', den: 'the', dem: 'the', des: 'the (of)',
   ist: 'is', war: 'was', hat: 'has', habe: 'have', bin: 'am',
   gerade: 'right now', hier: 'here', gestern: 'yesterday', gefehlt: 'was missing',
-  weil: 'because', kaputt: 'broken', müssen: 'must', wir_: 'we', etwas: 'something',
+  weil: 'because', kaputt: 'broken', müssen: 'must', etwas: 'something',
   tun: 'to do', vorhin: 'a moment ago', noch: 'still', da: 'there',
   trotzdem: 'still / nevertheless', bleibt: 'stays', bleibe: '(I) stay', an: 'at / on',
   seinem: 'its', platz: 'place', sehe: '(I) see', gekauft: 'bought',
@@ -395,7 +440,7 @@ function renderTappableSentence(sentence) {
 function getGloss(cleanToken, w, correctArt) {
   const lower = cleanToken.toLowerCase();
   if (lower === correctArt.toLowerCase()) return 'the';
-  if (lower === w.word.toLowerCase()) return w.meaning ? w.meaning : '(no meaning saved for this word — add one from My words)';
+  if (lower === w.word.toLowerCase()) return w.meaning ? w.meaning : '(no meaning saved for this word — add one from Word bank)';
   return GLOSS[lower] || '—';
 }
 
@@ -469,8 +514,16 @@ function dbClear(store) {
 let words = [];
 let userMeta = null;
 let statsMeta = null;
+let statsSentence = null;
 let activeCases = ['nom', 'akk', 'dat', 'gen'];
 let pendingCases = ['nom', 'akk', 'dat', 'gen'];
+
+const BACK_MAP = {
+  'screen-add': 'vocab-hub', 'screen-practice': 'vocab-hub', 'screen-spelling': 'vocab-hub',
+  'screen-list': 'vocab-hub', 'screen-stats': 'vocab-hub',
+  'screen-produce': 'sentence-hub', 'screen-stats-sentence': 'sentence-hub',
+  'screen-vocab-hub': 'home', 'screen-sentence-hub': 'home', 'screen-settings': 'home'
+};
 
 function renderCaseToggles() {
   pendingCases = [...activeCases];
@@ -484,10 +537,14 @@ function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   if (name === 'home') renderHome();
+  if (name === 'vocab-hub') renderVocabHub();
+  if (name === 'sentence-hub') renderSentenceHub();
   if (name === 'list') renderList();
   if (name === 'practice') startSession();
+  if (name === 'spelling') startSpellingRound();
   if (name === 'produce') renderProduce();
   if (name === 'stats') renderStats();
+  if (name === 'stats-sentence') renderStatsSentence();
   if (name === 'settings') { document.getElementById('settingsName').value = userMeta ? userMeta.name : ''; renderCaseToggles(); }
 }
 document.querySelectorAll('[data-go]').forEach(el => { el.addEventListener('click', () => showScreen(el.dataset.go)); });
@@ -539,7 +596,8 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
   else if (resetStage === 2) { msg.className = 'msg err'; msg.textContent = 'Really sure? Tap once more to permanently reset.'; }
   else {
     await dbClear('words'); await dbClear('meta');
-    words = []; userMeta = null; statsMeta = null; sentenceBank = []; activeCases = ['nom', 'akk', 'dat', 'gen']; pendingCases = ['nom', 'akk', 'dat', 'gen']; resetStage = 0; msg.textContent = '';
+    words = []; userMeta = null; statsMeta = null; statsSentence = null; sentenceBank = [];
+    activeCases = ['nom', 'akk', 'dat', 'gen']; pendingCases = ['nom', 'akk', 'dat', 'gen']; resetStage = 0; msg.textContent = '';
     showScreen('onboard');
   }
 });
@@ -547,16 +605,28 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
 function renderHome() {
   const line = ENCOURAGEMENT[Math.floor(Math.random() * ENCOURAGEMENT.length)];
   document.getElementById('homeGreeting').textContent = `Hello, ${userMeta ? userMeta.name : ''}`;
-  document.getElementById('homeStreak').textContent = `${statsMeta.streakCurrent || 0} 🔥 day streak`;
   document.getElementById('homeEncouragement').textContent = line;
   const due = buildQueue();
+  const badge = document.getElementById('vocabDueBadge');
+  if (due.length > 0) { badge.textContent = `${due.length} due`; badge.style.display = 'block'; }
+  else { badge.style.display = 'none'; }
+}
+
+function renderVocabHub() {
+  const due = buildQueue();
   const doneToday = statsMeta && statsMeta.lastCompletedDate === todayStr();
-  const statusEl = document.getElementById('homeStatus');
+  const streakEl = document.getElementById('vocabStreakLine');
+  const statusEl = document.getElementById('vocabStatusLine');
   const badge = document.getElementById('dueBadge');
+  streakEl.textContent = `${statsMeta ? (statsMeta.streakCurrent || 0) : 0} 🔥 day streak`;
   if (words.length === 0) { statusEl.textContent = 'Add your first word to get started.'; badge.style.display = 'none'; }
   else if (doneToday) { statusEl.textContent = "Today's task is done."; badge.style.display = 'none'; }
   else if (due.length > 0) { statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today.`; badge.textContent = `${due.length} due`; badge.style.display = 'block'; }
   else { statusEl.textContent = 'Nothing due right now.'; badge.style.display = 'none'; }
+}
+
+function renderSentenceHub() {
+  document.getElementById('sentenceStreakLine').textContent = `${statsSentence ? (statsSentence.streakCurrent || 0) : 0} 🔥 day streak`;
 }
 
 document.getElementById('previewSpeak').addEventListener('click', () => {
@@ -648,7 +718,7 @@ function renderList() {
   const card = document.getElementById('listCard');
   const countEl = document.getElementById('listCount');
   countEl.textContent = words.length === 0 ? '' : `${words.length} word${words.length === 1 ? '' : 's'} in your deck`;
-  if (words.length === 0) { card.innerHTML = '<div class="empty-state">No words yet. Add your first one from the home screen.</div>'; return; }
+  if (words.length === 0) { card.innerHTML = '<div class="empty-state">No words yet. Add your first one from New words.</div>'; return; }
   card.innerHTML = words.slice().reverse().map(w => `
     <div class="word-list-item gender-${w.gender}" data-id="${w.id}">
       <div class="thumb-wrap">
@@ -859,6 +929,85 @@ function renderStats() {
   } else { lsCard.style.display = 'none'; }
 }
 
+let currentSpellWord = null;
+
+function startSpellingRound() {
+  if (words.length === 0) {
+    document.getElementById('spellingArea').innerHTML = '<div class="card"><div class="empty-state">Add some words first, then come back to spell them.</div></div>';
+    return;
+  }
+  currentSpellWord = words[Math.floor(Math.random() * words.length)];
+  const w = currentSpellWord;
+  const area = document.getElementById('spellingArea');
+  area.innerHTML = `
+    <div class="card">
+      <div class="quiz-photo-frame"><img src="${w.photo}"><span class="star-badge-lg ${w.difficulty === 4 ? 'tier4' : ''}">${STAR_TEXT[w.difficulty] || ''}</span></div>
+      <label class="field-label">Gender</label>
+      <div class="gender-row">
+        <div class="gender-btn gb-blue" data-sg="masc"><span class="art">der</span></div>
+        <div class="gender-btn gb-pink" data-sg="fem"><span class="art">die</span></div>
+        <div class="gender-btn gb-black" data-sg="neut"><span class="art">das</span></div>
+      </div>
+      <label class="field-label">Spell it (${w.word.length} letters)</label>
+      <div class="spell-input-wrap">
+        <input type="text" id="spellInput" maxlength="${w.word.length}" autocomplete="off" autocapitalize="off">
+      </div>
+      <div class="spell-boxes" id="spellBoxes"></div>
+      <button class="primary" id="checkSpellBtn" disabled>Check</button>
+      <div id="spellFeedback"></div>
+    </div>
+  `;
+  let selectedSpellGender = null;
+  document.querySelectorAll('[data-sg]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-sg]').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedSpellGender = btn.dataset.sg;
+      updateSpellReady();
+    });
+  });
+  const boxesEl = document.getElementById('spellBoxes');
+  const renderBoxes = () => {
+    const val = document.getElementById('spellInput').value;
+    boxesEl.innerHTML = w.word.split('').map((_, i) => `<div class="spell-box">${val[i] ? val[i] : ''}</div>`).join('');
+  };
+  renderBoxes();
+  function updateSpellReady() {
+    const val = document.getElementById('spellInput').value;
+    document.getElementById('checkSpellBtn').disabled = !(selectedSpellGender && val.length > 0);
+  }
+  document.getElementById('spellInput').addEventListener('input', () => { renderBoxes(); updateSpellReady(); });
+  document.getElementById('checkSpellBtn').addEventListener('click', () => checkSpelling(w, selectedSpellGender));
+}
+
+async function checkSpelling(w, selectedGender) {
+  const typed = document.getElementById('spellInput').value;
+  const correct = w.word;
+  const genderRight = selectedGender === w.gender;
+  let matchCount = 0;
+  const boxHtml = correct.split('').map((ch, i) => {
+    const typedCh = typed[i] || '';
+    const isRight = typedCh.toLowerCase() === ch.toLowerCase();
+    if (isRight) matchCount++;
+    return `<div class="spell-box ${isRight ? 'correct' : 'wrong'}">${ch}</div>`;
+  }).join('');
+  document.getElementById('spellBoxes').innerHTML = boxHtml;
+  const pct = Math.round((matchCount / correct.length) * 100);
+  const fb = document.getElementById('spellFeedback');
+  fb.innerHTML = `<div class="feedback ${genderRight && pct === 100 ? 'correct' : 'wrong'}">
+    <div class="fb-line">Gender: ${genderRight ? 'correct' : `not quite — it's ${GENDER_LABEL[w.gender]}`}</div>
+    <div class="fb-line">Spelling: ${pct}% (${matchCount}/${correct.length} letters)</div>
+    <div class="fb-line"><span class="fb-label">Solution:</span> ${GENDER_LABEL[w.gender]} ${correct} <span class="speak-inline" id="spellSpeakBtn">🔊</span></div>
+    ${w.meaning ? `<div class="fb-line">Meaning: ${w.meaning}</div>` : ''}
+  </div>
+  <button class="next-btn" id="spellNextBtn" style="margin-top:0.5rem;">Next word →</button>`;
+  document.getElementById('spellSpeakBtn').addEventListener('click', () => speak(`${GENDER_LABEL[w.gender]} ${correct}`));
+  document.getElementById('checkSpellBtn').disabled = true;
+  document.getElementById('spellNextBtn').addEventListener('click', startSpellingRound);
+  statsMeta.totalReviews = (statsMeta.totalReviews || 0) + 1;
+  await dbPut('meta', statsMeta);
+}
+
 let sentenceBank = [];
 let currentProduceItem = null;
 
@@ -973,7 +1122,7 @@ function showProduceQuestion() {
   });
 }
 
-function checkProduceAnswer() {
+async function checkProduceAnswer() {
   const userText = document.getElementById('produceInput').value.trim();
   if (!userText) return;
   const result = scoreAnswer(userText, currentProduceItem.de);
@@ -990,6 +1139,33 @@ function checkProduceAnswer() {
   `;
   document.getElementById('speakCorrectBtn').addEventListener('click', () => speak(currentProduceItem.de));
   document.getElementById('produceNextBtn').addEventListener('click', showProduceQuestion);
+
+  const today = todayStr();
+  if (statsSentence.lastCompletedDate !== today) {
+    if (statsSentence.lastCompletedDate === yesterdayStr()) statsSentence.streakCurrent = (statsSentence.streakCurrent || 0) + 1;
+    else statsSentence.streakCurrent = 1;
+    statsSentence.streakBest = Math.max(statsSentence.streakBest || 0, statsSentence.streakCurrent);
+    statsSentence.lastCompletedDate = today;
+  }
+  statsSentence.totalReviews = (statsSentence.totalReviews || 0) + 1;
+  statsSentence.lastSession = { score: result.pct, en: currentProduceItem.en, de: currentProduceItem.de };
+  await dbPut('meta', statsSentence);
+}
+
+function renderStatsSentence() {
+  document.getElementById('streakNumSentence').textContent = `${statsSentence.streakCurrent || 0} 🔥`;
+  document.getElementById('bestStreakValSentence').textContent = statsSentence.streakBest || 0;
+  document.getElementById('totalSentencesVal').textContent = sentenceBank.length;
+  document.getElementById('totalReviewsValSentence').textContent = statsSentence.totalReviews || 0;
+  const ls = statsSentence.lastSession;
+  const lsCard = document.getElementById('lastSessionCardSentence');
+  if (ls) {
+    lsCard.style.display = 'block';
+    document.getElementById('lastSessionBodySentence').innerHTML = `
+      <div class="summary-stat"><span class="lbl">Score</span><span class="val">${ls.score}%</span></div>
+      <div class="summary-stat"><span class="lbl">Sentence</span><span class="val">${ls.en}</span></div>
+    `;
+  } else { lsCard.style.display = 'none'; }
 }
 
 function shuffle(arr) {
@@ -1011,8 +1187,8 @@ document.addEventListener('touchend', (e) => {
   const dy = e.changedTouches[0].screenY - touchStartY;
   if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5 && dx < 0) {
     const activeScreen = document.querySelector('.screen.active');
-    if (activeScreen && activeScreen.id !== 'screen-home' && activeScreen.id !== 'screen-onboard') {
-      showScreen('home');
+    if (activeScreen && BACK_MAP[activeScreen.id]) {
+      showScreen(BACK_MAP[activeScreen.id]);
     }
   }
 }, { passive: true });
@@ -1022,11 +1198,13 @@ async function init() {
   words = await dbGetAll('words');
   userMeta = await dbGet('meta', 'user');
   statsMeta = await dbGet('meta', 'stats');
+  statsSentence = await dbGet('meta', 'statsSentence');
   const bankRecord = await dbGet('meta', 'sentenceBank');
   if (bankRecord && bankRecord.pairs) sentenceBank = bankRecord.pairs;
   const settingsRecord = await dbGet('meta', 'appSettings');
   if (settingsRecord && settingsRecord.activeCases && settingsRecord.activeCases.length) activeCases = settingsRecord.activeCases;
   if (!statsMeta) { statsMeta = { id: 'stats', streakCurrent: 0, streakBest: 0, lastCompletedDate: null, totalReviews: 0 }; await dbPut('meta', statsMeta); }
+  if (!statsSentence) { statsSentence = { id: 'statsSentence', streakCurrent: 0, streakBest: 0, lastCompletedDate: null, totalReviews: 0 }; await dbPut('meta', statsSentence); }
   if (!userMeta) showScreen('onboard'); else showScreen('home');
 }
 init();
