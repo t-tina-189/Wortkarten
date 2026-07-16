@@ -151,8 +151,8 @@
   .chip-extra { background: #FAEEDA; color: #633806; }
   .manage-link { text-align: center; font-size: 12.5px; color: #8A8980; padding: 12px 0 0; cursor: pointer; }
 
-  .spell-input-wrap { text-align: center; margin-bottom: 0.5rem; }
-  .spell-input-wrap input { max-width: 260px; margin: 0 auto 0; letter-spacing: 0.05em; }
+  .spell-overlay-wrap { position: relative; margin-bottom: 0.5rem; }
+  .spell-overlay-wrap input { position: absolute; inset: 0; opacity: 0; border: none; padding: 0; margin: 0; width: 100%; height: 100%; font-size: 16px; background: transparent; }
   .spell-boxes { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 10px 0 1rem; }
   .spell-box { width: 32px; height: 40px; border: 1.5px solid #D5D4C9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 17px; background: #FAF9F4; text-transform: lowercase; }
   .spell-box.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
@@ -180,7 +180,7 @@
       <div class="pill" data-go="vocab-hub">Vocabulary<span class="due-badge" id="vocabDueBadge"></span></div>
       <div class="pill" data-go="sentence-hub">Sentence</div>
     </div>
-    <div class="settings-link" id="goSettings">Settings</div>
+    <div class="settings-link" data-go="settings">Settings</div>
   </div>
 
   <div class="screen" id="screen-vocab-hub">
@@ -191,11 +191,12 @@
     </div>
     <div class="menu-stack">
       <div class="pill" data-go="add">New words</div>
-      <div class="pill" data-go="practice">Artikel test<span class="due-badge" id="dueBadge"></span></div>
-      <div class="pill" data-go="spelling">Spelling bee</div>
+      <div class="pill" data-go="practice">Article test<span class="due-badge" id="dueBadge"></span></div>
+      <div class="pill" data-go="spelling">Spelling bee<span class="due-badge" id="spellDueBadge"></span></div>
       <div class="pill" data-go="list">Word bank</div>
       <div class="pill" data-go="stats">Stats</div>
     </div>
+    <div class="settings-link" data-go="settings">Settings</div>
   </div>
 
   <div class="screen" id="screen-sentence-hub">
@@ -207,6 +208,7 @@
       <div class="pill" data-go="produce">English → German</div>
       <div class="pill" data-go="stats-sentence">Stats</div>
     </div>
+    <div class="settings-link" data-go="settings">Settings</div>
   </div>
 
   <div class="screen" id="screen-add">
@@ -548,7 +550,6 @@ function showScreen(name) {
   if (name === 'settings') { document.getElementById('settingsName').value = userMeta ? userMeta.name : ''; renderCaseToggles(); }
 }
 document.querySelectorAll('[data-go]').forEach(el => { el.addEventListener('click', () => showScreen(el.dataset.go)); });
-document.getElementById('goSettings').addEventListener('click', () => showScreen('settings'));
 
 document.getElementById('onboardSave').addEventListener('click', async () => {
   const name = document.getElementById('onboardName').value.trim();
@@ -623,6 +624,14 @@ function renderVocabHub() {
   else if (doneToday) { statusEl.textContent = "Today's task is done."; badge.style.display = 'none'; }
   else if (due.length > 0) { statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today.`; badge.textContent = `${due.length} due`; badge.style.display = 'block'; }
   else { statusEl.textContent = 'Nothing due right now.'; badge.style.display = 'none'; }
+
+  const spellDue = buildSpellQueue();
+  const spellBadge = document.getElementById('spellDueBadge');
+  const spellDoneToday = statsMeta && statsMeta.spellingLastCompletedDate === todayStr();
+  if (words.length === 0) { spellBadge.style.display = 'none'; }
+  else if (spellDue.length > 0) { spellBadge.textContent = `${spellDue.length} due`; spellBadge.style.display = 'block'; }
+  else if (spellDoneToday) { spellBadge.textContent = 'Completed'; spellBadge.style.display = 'block'; }
+  else { spellBadge.style.display = 'none'; }
 }
 
 function renderSentenceHub() {
@@ -929,17 +938,55 @@ function renderStats() {
   } else { lsCard.style.display = 'none'; }
 }
 
-let currentSpellWord = null;
+let spellQueue = [], spellRetryPool = [], currentSpellWord = null;
+
+function ensureSpellState(w) {
+  if (!w.spelling) w.spelling = newCaseState();
+}
+
+function buildSpellQueue() {
+  const today = todayStr();
+  const due = [];
+  words.forEach(w => {
+    ensureSpellState(w);
+    if (w.spelling.nextDue <= today) due.push(w.id);
+  });
+  for (let i = due.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [due[i], due[j]] = [due[j], due[i]]; }
+  return due;
+}
 
 function startSpellingRound() {
   if (words.length === 0) {
     document.getElementById('spellingArea').innerHTML = '<div class="card"><div class="empty-state">Add some words first, then come back to spell them.</div></div>';
     return;
   }
-  currentSpellWord = words[Math.floor(Math.random() * words.length)];
-  const w = currentSpellWord;
+  spellQueue = buildSpellQueue();
+  spellRetryPool = [];
+  nextSpellCard();
+}
+
+async function nextSpellCard() {
+  if (spellQueue.length === 0 && spellRetryPool.length > 0) { spellQueue = spellRetryPool; spellRetryPool = []; }
+  if (spellQueue.length === 0) {
+    const today = todayStr();
+    if (statsMeta.spellingLastCompletedDate !== today) {
+      statsMeta.spellingLastCompletedDate = today;
+      await dbPut('meta', statsMeta);
+    }
+    document.getElementById('spellingArea').innerHTML = '<div class="card"><div class="empty-state">All spelling words done for today. Come back tomorrow for more.</div></div>';
+    return;
+  }
+  const wordId = spellQueue.shift();
+  currentSpellWord = words.find(x => x.id === wordId);
+  if (!currentSpellWord) { nextSpellCard(); return; }
+  renderSpellCard(currentSpellWord);
+}
+
+function renderSpellCard(w) {
+  const remaining = spellQueue.length + spellRetryPool.length + 1;
   const area = document.getElementById('spellingArea');
   area.innerHTML = `
+    <p class="list-count">${remaining} word${remaining === 1 ? '' : 's'} left today</p>
     <div class="card">
       <div class="quiz-photo-frame"><img src="${w.photo}"><span class="star-badge-lg ${w.difficulty === 4 ? 'tier4' : ''}">${STAR_TEXT[w.difficulty] || ''}</span></div>
       <label class="field-label">Gender</label>
@@ -949,10 +996,10 @@ function startSpellingRound() {
         <div class="gender-btn gb-black" data-sg="neut"><span class="art">das</span></div>
       </div>
       <label class="field-label">Spell it (${w.word.length} letters)</label>
-      <div class="spell-input-wrap">
-        <input type="text" id="spellInput" maxlength="${w.word.length}" autocomplete="off" autocapitalize="off">
+      <div class="spell-overlay-wrap">
+        <div class="spell-boxes" id="spellBoxes"></div>
+        <input type="text" id="spellInput" maxlength="${w.word.length}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       </div>
-      <div class="spell-boxes" id="spellBoxes"></div>
       <button class="primary" id="checkSpellBtn" disabled>Check</button>
       <div id="spellFeedback"></div>
     </div>
@@ -977,6 +1024,7 @@ function startSpellingRound() {
     document.getElementById('checkSpellBtn').disabled = !(selectedSpellGender && val.length > 0);
   }
   document.getElementById('spellInput').addEventListener('input', () => { renderBoxes(); updateSpellReady(); });
+  try { document.getElementById('spellInput').focus(); } catch (e) {}
   document.getElementById('checkSpellBtn').addEventListener('click', () => checkSpelling(w, selectedSpellGender));
 }
 
@@ -993,17 +1041,32 @@ async function checkSpelling(w, selectedGender) {
   }).join('');
   document.getElementById('spellBoxes').innerHTML = boxHtml;
   const pct = Math.round((matchCount / correct.length) * 100);
+  const isFullyCorrect = genderRight && pct === 100;
   const fb = document.getElementById('spellFeedback');
-  fb.innerHTML = `<div class="feedback ${genderRight && pct === 100 ? 'correct' : 'wrong'}">
+  fb.innerHTML = `<div class="feedback ${isFullyCorrect ? 'correct' : 'wrong'}">
     <div class="fb-line">Gender: ${genderRight ? 'correct' : `not quite — it's ${GENDER_LABEL[w.gender]}`}</div>
     <div class="fb-line">Spelling: ${pct}% (${matchCount}/${correct.length} letters)</div>
     <div class="fb-line"><span class="fb-label">Solution:</span> ${GENDER_LABEL[w.gender]} ${correct} <span class="speak-inline" id="spellSpeakBtn">🔊</span></div>
     ${w.meaning ? `<div class="fb-line">Meaning: ${w.meaning}</div>` : ''}
+    ${isFullyCorrect ? '' : '<div class="fb-line">This one will come back later today.</div>'}
   </div>
   <button class="next-btn" id="spellNextBtn" style="margin-top:0.5rem;">Next word →</button>`;
   document.getElementById('spellSpeakBtn').addEventListener('click', () => speak(`${GENDER_LABEL[w.gender]} ${correct}`));
   document.getElementById('checkSpellBtn').disabled = true;
-  document.getElementById('spellNextBtn').addEventListener('click', startSpellingRound);
+  document.getElementById('spellNextBtn').addEventListener('click', nextSpellCard);
+
+  ensureSpellState(w);
+  if (isFullyCorrect) {
+    const { stage, days } = nextInterval(w.spelling.stage);
+    w.spelling.stage = stage;
+    w.spelling.nextDue = new Date(Date.now() + days * DAY_MS).toISOString().slice(0, 10);
+  } else {
+    w.spelling.stage = -1;
+    w.spelling.nextDue = todayStr();
+    spellRetryPool.push(w.id);
+    if (spellRetryPool.length >= 2) { const insertAt = Math.min(2, spellQueue.length); spellQueue.splice(insertAt, 0, spellRetryPool.shift()); }
+  }
+  await dbPut('words', w);
   statsMeta.totalReviews = (statsMeta.totalReviews || 0) + 1;
   await dbPut('meta', statsMeta);
 }
