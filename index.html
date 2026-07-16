@@ -32,10 +32,7 @@
 
   .word-row { display: flex; gap: 8px; margin-bottom: 1rem; }
   .word-row input { margin-bottom: 0; }
-  .speak-btn {
-    flex-shrink: 0; width: 42px; border-radius: 9px; border: 1px solid #D5D4C9; background: #FAF9F4;
-    font-size: 16px; cursor: pointer; color: #6B6A63;
-  }
+  .speak-btn { flex-shrink: 0; width: 42px; border-radius: 9px; border: 1px solid #D5D4C9; background: #FAF9F4; font-size: 16px; cursor: pointer; color: #6B6A63; }
   .speak-btn:active { transform: scale(0.95); }
   .speak-inline { border: none; background: none; cursor: pointer; font-size: 13px; color: #185FA5; padding: 2px 4px; }
 
@@ -68,18 +65,18 @@
   .msg.ok { color: #2F8F5B; }
   .msg.err { color: #C1443B; }
 
-  .word-list-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #ECEBE2; }
-  .word-list-item:last-child { border-bottom: none; }
+  .word-list-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; margin-bottom: 8px; }
+  .word-list-item.gender-masc { background: #E6F1FB; }
+  .word-list-item.gender-fem { background: #FBEAF0; }
+  .word-list-item.gender-neut { background: #E7E7E2; }
   .thumb-wrap { position: relative; width: 46px; height: 46px; flex-shrink: 0; }
   .thumb-wrap img { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; display: block; }
   .star-badge { position: absolute; bottom: -4px; right: -4px; background: #1C1B19; color: #FAEEDA; font-size: 8.5px; font-weight: 600; padding: 1px 4px; border-radius: 6px; letter-spacing: 0.02em; }
   .star-badge.tier4 { background: linear-gradient(135deg,#BA7517,#F5D98A); color: #3A2200; }
   .word-list-item .info { flex: 1; min-width: 0; cursor: pointer; }
   .word-list-item .info .w { font-size: 14.5px; font-weight: 500; }
-  .word-list-item .info .g { font-size: 12px; color: #8A8980; }
-  .swatch { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
-  .sw-blue { background: #185FA5; } .sw-pink { background: #993556; } .sw-black { background: #1C1B19; }
-  .del-btn { border: none; background: none; color: #B8B6A9; font-size: 18px; cursor: pointer; padding: 4px 6px; }
+  .word-list-item .info .g { font-size: 12px; color: #6B6A63; }
+  .del-btn { border: none; background: none; color: #8A8980; font-size: 18px; cursor: pointer; padding: 4px 6px; }
   .del-btn:hover { color: #C1443B; }
   .empty-state { text-align: center; padding: 2.5rem 1rem; color: #8A8980; font-size: 14px; }
 
@@ -94,13 +91,17 @@
   .opt-btn.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
   .opt-btn.wrong { background: #FCEBEB; border-color: #E24B4A; color: #791F1F; }
   .opt-btn:disabled { cursor: default; }
-  .feedback { font-size: 14px; padding: 10px 12px; border-radius: 9px; margin-bottom: 1rem; text-align: center; }
+  .feedback { font-size: 13.5px; padding: 12px; border-radius: 9px; margin-bottom: 1rem; text-align: center; }
   .feedback.correct { background: #EAF3DE; color: #27500A; }
   .feedback.wrong { background: #FCEBEB; color: #791F1F; }
+  .fb-line { margin-bottom: 6px; }
+  .fb-line:last-child { margin-bottom: 0; }
+  .fb-label { font-weight: 600; }
+  .fb-sentence-row { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.08); }
+  .tap-word { cursor: pointer; border-bottom: 1px dotted currentColor; opacity: 0.9; }
+  .tap-word:active { opacity: 0.5; }
   .score-row { display: flex; justify-content: center; gap: 16px; font-size: 12.5px; color: #8A8980; margin-bottom: 1rem; }
-  .btn-row { display: flex; gap: 8px; }
-  .listen-btn, .next-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #1C1B19; background: transparent; color: #1C1B19; font-size: 14px; font-weight: 500; cursor: pointer; }
-  .next-btn { background: #1C1B19; color: #F4F3EC; }
+  .next-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #1C1B19; color: #F4F3EC; font-size: 14px; font-weight: 500; cursor: pointer; }
 
   .summary-stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ECEBE2; font-size: 13.5px; }
   .summary-stat:last-child { border-bottom: none; }
@@ -111,11 +112,8 @@
   .home-header h1 { font-size: 23px; letter-spacing: -0.01em; }
   .home-status { margin: 8px 0 0; font-size: 13.5px; color: #6B6A63; }
   .menu-stack { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
-  .pill {
-    width: 100%; max-width: 300px; background: #FFFFFF; border: 1px solid #DEDDD3; border-radius: 999px;
-    padding: 15px 1rem; text-align: center; cursor: pointer; font-size: 15px; font-weight: 500;
-  }
-  .pill .pill-sub { display: block; font-size: 11px; color: #8A8980; font-weight: 400; margin-top: 2px; }
+  .pill { position: relative; width: 100%; max-width: 300px; background: #FFFFFF; border: 1px solid #DEDDD3; border-radius: 999px; padding: 15px 1rem; text-align: center; cursor: pointer; font-size: 15px; font-weight: 500; }
+  .due-badge { position: absolute; bottom: -6px; right: 10px; background: #1C1B19; color: #FAEEDA; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; display: none; }
   .settings-link { text-align: center; font-size: 12.5px; color: #8A8980; padding: 10px; cursor: pointer; }
 
   .onboard-wrap { padding: 3rem 0; text-align: center; }
@@ -147,7 +145,7 @@
     </div>
     <div class="menu-stack">
       <div class="pill" data-go="add">Add words</div>
-      <div class="pill" data-go="practice">Practice now<span class="pill-sub" id="dueSub"></span></div>
+      <div class="pill" data-go="practice">Practice now<span class="due-badge" id="dueBadge"></span></div>
       <div class="pill" data-go="list">My words</div>
       <div class="pill" data-go="stats">Stats</div>
     </div>
@@ -241,7 +239,7 @@ const DECL = {
   neut: { nom: 'das', akk: 'das', dat: 'dem', gen: 'des' }
 };
 const GENDER_LABEL = { masc: 'der', fem: 'die', neut: 'das' };
-const GENDER_SWATCH = { masc: 'sw-blue', fem: 'sw-pink', neut: 'sw-black' };
+const GENDER_WORD = { masc: 'masculine', fem: 'feminine', neut: 'neuter' };
 const CASE_LIST = ['nom', 'akk', 'dat', 'gen'];
 const CASE_NAMES = { nom: 'Nominativ', akk: 'Akkusativ', dat: 'Dativ', gen: 'Genitiv' };
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -276,17 +274,40 @@ const CASE_TEMPLATES = {
   ]
 };
 
+const EN_TEMPLATES = {
+  nom: [
+    (w) => `The ${w} is right here.`,
+    (w) => `The ${w} was missing yesterday.`,
+    (w) => `Because the ${w} is broken, we need to do something.`,
+    (w) => `The ${w} used to be here, but not anymore.`,
+    (w) => `Still, the ${w} stays in its place.`
+  ],
+  akk: [
+    (w) => `I see the ${w}.`,
+    (w) => `I bought the ${w} yesterday.`,
+    (w) => `Because I need the ${w}, I'm going shopping.`,
+    (w) => `I like the ${w}, but not especially.`,
+    (w) => `Still, I'm not taking the ${w} with me.`
+  ],
+  dat: [
+    (w) => `I'm talking with the ${w}.`,
+    (w) => `I talked with the ${w}.`,
+    (w) => `Because I talk with the ${w}, I understand it better.`,
+    (w) => `I help the ${w}, but only briefly.`,
+    (w) => `Still, I trust the ${w}.`
+  ],
+  gen: [
+    (w) => `I like the color of the ${w}.`,
+    (w) => `Because of the ${w}, we had to wait.`,
+    (w) => `Despite the ${w}, we arrived on time.`,
+    (w) => `This is the story of the ${w}.`
+  ]
+};
+
 const ENCOURAGEMENT = [
-  "Ready when you are.",
-  "Small steps, every day.",
-  "Let's keep the streak alive.",
-  "Your words are waiting.",
-  "One session at a time.",
-  "Consistency beats intensity.",
-  "Back for more — good.",
-  "Let's sharpen those cases.",
-  "Today counts too.",
-  "You've got this."
+  "Ready when you are.", "Small steps, every day.", "Let's keep the streak alive.",
+  "Your words are waiting.", "One session at a time.", "Consistency beats intensity.",
+  "Back for more — good.", "Let's sharpen those cases.", "Today counts too.", "You've got this."
 ];
 
 function speak(text) {
@@ -296,6 +317,13 @@ function speak(text) {
   u.lang = 'de-DE';
   u.rate = 0.95;
   window.speechSynthesis.speak(u);
+}
+
+function tappableSentence(sentence) {
+  return sentence.split(' ').map(tok => {
+    const clean = tok.replace(/[.,!?]+$/, '');
+    return `<span class="tap-word" data-w="${clean}">${tok}</span>`;
+  }).join(' ');
 }
 
 const STAR_TEXT = { 1: '★', 2: '★★', 3: '★★★', 4: '★★★★' };
@@ -415,11 +443,11 @@ function renderHome() {
   const due = buildQueue();
   const doneToday = statsMeta && statsMeta.lastCompletedDate === todayStr();
   const statusEl = document.getElementById('homeStatus');
-  const dueSub = document.getElementById('dueSub');
-  if (words.length === 0) { statusEl.textContent = 'Add your first word to get started.'; dueSub.textContent = ''; }
-  else if (doneToday) { statusEl.textContent = `Today's task is done. ${line}`; dueSub.textContent = 'Done for today'; }
-  else if (due.length > 0) { statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today. ${line}`; dueSub.textContent = `${due.length} due`; }
-  else { statusEl.textContent = `Nothing due right now. ${line}`; dueSub.textContent = ''; }
+  const badge = document.getElementById('dueBadge');
+  if (words.length === 0) { statusEl.textContent = 'Add your first word to get started.'; badge.style.display = 'none'; }
+  else if (doneToday) { statusEl.textContent = `Today's task is done. ${line}`; badge.style.display = 'none'; }
+  else if (due.length > 0) { statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today. ${line}`; badge.textContent = `${due.length} due`; badge.style.display = 'block'; }
+  else { statusEl.textContent = `Nothing due right now. ${line}`; badge.style.display = 'none'; }
 }
 
 document.getElementById('previewSpeak').addEventListener('click', () => {
@@ -503,14 +531,14 @@ function renderList() {
   const card = document.getElementById('listCard');
   if (words.length === 0) { card.innerHTML = '<div class="empty-state">No words yet. Add your first one from the home screen.</div>'; return; }
   card.innerHTML = words.slice().reverse().map(w => `
-    <div class="word-list-item" data-id="${w.id}">
+    <div class="word-list-item gender-${w.gender}" data-id="${w.id}">
       <div class="thumb-wrap">
         <img src="${w.photo}">
         <span class="star-badge ${w.difficulty === 4 ? 'tier4' : ''}">${STAR_TEXT[w.difficulty] || ''}</span>
       </div>
-      <div class="info" data-speak="${w.word}">
-        <div class="w"><span class="swatch ${GENDER_SWATCH[w.gender]}"></span>${GENDER_LABEL[w.gender]} ${w.word} <span class="speak-inline">🔊</span></div>
-        <div class="g">${w.gender === 'masc' ? 'masculine' : w.gender === 'fem' ? 'feminine' : 'neuter'}</div>
+      <div class="info" data-speak="${GENDER_LABEL[w.gender]} ${w.word}">
+        <div class="w"><span>${GENDER_LABEL[w.gender]} ${w.word}</span> <span class="speak-inline">🔊</span></div>
+        <div class="g">${GENDER_WORD[w.gender]}</div>
       </div>
       <button class="del-btn" data-del="${w.id}">×</button>
     </div>
@@ -526,7 +554,8 @@ function renderList() {
   });
 }
 
-let sessionQueue = [], retryPool = [], currentItem = null, currentFullSentence = '';
+let sessionQueue = [], retryPool = [], currentItem = null;
+let currentFullSentence = '', currentEnSentence = '', currentGender = null, currentCase = null, currentCorrectArt = '', currentWord = '';
 let sessionStats = { total: 0, correct: 0, byWord: {}, byCase: {} };
 
 function buildQueue() {
@@ -560,9 +589,11 @@ function renderQuestion() {
   const distractors = shuffle(allForms.filter(f => f !== correctArt));
   const options = shuffle([correctArt, distractors[0], distractors[1]]);
   const templates = CASE_TEMPLATES[c];
-  const template = templates[Math.floor(Math.random() * templates.length)];
-  const sentence = template('___', w.word);
-  currentFullSentence = template(correctArt, w.word);
+  const idx = Math.floor(Math.random() * templates.length);
+  const sentence = templates[idx]('___', w.word);
+  currentFullSentence = templates[idx](correctArt, w.word);
+  currentEnSentence = EN_TEMPLATES[c][idx](w.word);
+  currentGender = w.gender; currentCase = c; currentCorrectArt = correctArt; currentWord = w.word;
   const parts = sentence.split('___');
   const remaining = sessionQueue.length + retryPool.length + 1;
   const area = document.getElementById('practiceArea');
@@ -575,10 +606,7 @@ function renderQuestion() {
       <p class="quiz-sentence">${parts[0]}<span class="blank" id="blankSlot">___</span>${parts[1]}</p>
       <div class="options-grid" id="optsGrid">${options.map(o => `<button class="opt-btn" data-opt="${o}">${o}</button>`).join('')}</div>
       <div id="feedbackSlot"></div>
-      <div class="btn-row" id="afterRow" style="display:none;">
-        <button class="listen-btn" id="listenBtn">🔊 Listen to sentence</button>
-        <button class="next-btn" id="nextBtn">Next card →</button>
-      </div>
+      <button class="next-btn" id="nextBtn" style="display:none;">Next card →</button>
     </div>
   `;
   document.getElementById('speakWordBtn').addEventListener('click', () => speak(w.word));
@@ -601,8 +629,26 @@ async function handleAnswer(chosen, w, c, correctArt) {
     else if (btn.dataset.opt === chosen) btn.classList.add('wrong');
   });
   document.getElementById('blankSlot').textContent = correctArt;
+
+  const dictArt = GENDER_LABEL[w.gender];
+  const genderWord = GENDER_WORD[w.gender];
+  const caseExplain = c === 'nom'
+    ? `${cap(genderWord)} nouns use <strong>${dictArt}</strong> in Nominativ — no change here.`
+    : `${cap(genderWord)}: <strong>${dictArt}</strong> (Nominativ) → <strong>${correctArt}</strong> in ${CASE_NAMES[c]}.`;
+
   const fb = document.getElementById('feedbackSlot');
-  fb.innerHTML = `<div class="feedback ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? 'Right.' : 'Not quite — this one will come back later today.'} ${GENDER_LABEL[w.gender]} ${w.word} → ${CASE_NAMES[c]}: <strong>${correctArt} ${w.word}</strong></div>`;
+  fb.innerHTML = `<div class="feedback ${isCorrect ? 'correct' : 'wrong'}">
+    <div class="fb-line">${isCorrect ? 'Right.' : 'Not quite.'}</div>
+    <div class="fb-line"><span class="fb-label">Translation:</span> ${currentEnSentence}</div>
+    <div class="fb-line">${caseExplain}</div>
+    <div class="fb-line">It should be: <strong>${correctArt} ${w.word}</strong></div>
+    <div class="fb-sentence-row">
+      <span class="speak-inline" id="listenSentenceBtn">🔊</span>
+      ${tappableSentence(currentFullSentence)}
+    </div>
+  </div>`;
+  fb.querySelectorAll('.tap-word').forEach(el => el.addEventListener('click', () => speak(el.dataset.w)));
+  document.getElementById('listenSentenceBtn').addEventListener('click', () => speak(currentFullSentence));
 
   const caseState = w.cases[c];
   if (isCorrect) {
@@ -618,8 +664,7 @@ async function handleAnswer(chosen, w, c, correctArt) {
   statsMeta.totalReviews = (statsMeta.totalReviews || 0) + 1;
   await dbPut('meta', statsMeta);
 
-  document.getElementById('afterRow').style.display = 'flex';
-  document.getElementById('listenBtn').onclick = () => speak(currentFullSentence);
+  document.getElementById('nextBtn').style.display = 'block';
   document.getElementById('nextBtn').onclick = nextCard;
 }
 
