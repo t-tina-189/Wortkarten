@@ -51,6 +51,8 @@
   .gb-pink.selected { border-color: #993556; background: #993556; color: #fff; }
   .gb-black { background: #E9E8E1; color: #232220; }
   .gb-black.selected { border-color: #1C1B19; background: #1C1B19; color: #fff; }
+  .gender-btn.correct-reveal { border-color: #639922; background: #EAF3DE; color: #27500A; }
+  .gender-btn.dimmed-reveal { background: #E7E7E2; color: #A6A59D; pointer-events: none; }
 
   .diff-btn { background: #FAF9F4; font-size: 15px; color: #6B6A63; }
   .diff-btn.selected { border-color: #BA7517; background: #FAEEDA; color: #633806; }
@@ -1000,6 +1002,7 @@ function renderSpellCard(w) {
         <div class="spell-boxes" id="spellBoxes"></div>
         <input type="text" id="spellInput" maxlength="${w.word.length}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       </div>
+      <div class="manage-link" id="skipWordLink" style="padding-top:4px;">Skip word</div>
       <button class="primary" id="checkSpellBtn" disabled>Check</button>
       <div id="spellFeedback"></div>
     </div>
@@ -1026,6 +1029,10 @@ function renderSpellCard(w) {
   document.getElementById('spellInput').addEventListener('input', () => { renderBoxes(); updateSpellReady(); });
   try { document.getElementById('spellInput').focus(); } catch (e) {}
   document.getElementById('checkSpellBtn').addEventListener('click', () => checkSpelling(w, selectedSpellGender));
+  document.getElementById('skipWordLink').addEventListener('click', () => {
+    spellQueue.push(w.id);
+    nextSpellCard();
+  });
 }
 
 async function checkSpelling(w, selectedGender) {
@@ -1054,6 +1061,13 @@ async function checkSpelling(w, selectedGender) {
   document.getElementById('spellSpeakBtn').addEventListener('click', () => speak(`${GENDER_LABEL[w.gender]} ${correct}`));
   document.getElementById('checkSpellBtn').disabled = true;
   document.getElementById('spellNextBtn').addEventListener('click', nextSpellCard);
+  document.querySelectorAll('[data-sg]').forEach(btn => {
+    btn.classList.remove('selected');
+    if (btn.dataset.sg === w.gender) btn.classList.add('correct-reveal');
+    else btn.classList.add('dimmed-reveal');
+  });
+  const skipLink = document.getElementById('skipWordLink');
+  if (skipLink) skipLink.style.display = 'none';
 
   ensureSpellState(w);
   if (isFullyCorrect) {
