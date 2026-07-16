@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wortkarten</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1C1B19">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #EDEEE8;
+    color: #232220;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  body { padding-bottom: 4rem; }
+
+  h1, h2 { font-family: 'IBM Plex Serif', serif; font-weight: 600; margin: 0; }
+
+  .wrap { max-width: 480px; margin: 0 auto; padding: 1.25rem 1rem 2rem; }
+
+  header { padding: 1.5rem 0 1rem; }
+  header h1 { font-size: 22px; letter-spacing: -0.01em; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #6B6A63; }
+
+  nav.tabs {
+    display: flex; gap: 6px; margin-bottom: 1.5rem;
+    background: #E1E1D8; border-radius: 10px; padding: 4px;
+  }
+  nav.tabs button {
+    flex: 1; border: none; background: transparent; padding: 9px 4px;
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500;
+    color: #6B6A63; border-radius: 8px; cursor: pointer;
+  }
+  nav.tabs button.active { background: #FFFFFF; color: #1C1B19; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: #FFFFFF; border-radius: 14px; padding: 1.1rem;
+    border: 1px solid #DEDDD3; margin-bottom: 1rem;
+  }
+
+  label.field-label {
+    display: block; font-size: 12px; font-weight: 500; color: #6B6A63;
+    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+  }
+
+  input[type="text"] {
+    width: 100%; padding: 10px 12px; border-radius: 9px;
+    border: 1px solid #D5D4C9; font-size: 15px; font-family: inherit;
+    background: #FAF9F4; margin-bottom: 1rem;
+  }
+  input[type="text"]:focus { outline: none; border-color: #232220; }
+
+  .photo-input-area {
+    border: 1.5px dashed #C9C8BC; border-radius: 12px;
+    padding: 1.2rem; text-align: center; margin-bottom: 1rem;
+    background: #FAF9F4; cursor: pointer; position: relative;
+  }
+  .photo-input-area img { max-width: 100%; max-height: 220px; border-radius: 8px; display: block; margin: 0 auto; }
+  .photo-input-area .hint { font-size: 13px; color: #8A8980; margin-top: 6px; }
+  .photo-input-area input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+
+  .gender-row { display: flex; gap: 8px; margin-bottom: 1.1rem; }
+  .gender-btn {
+    flex: 1; border-radius: 10px; border: 2px solid transparent;
+    padding: 12px 4px; text-align: center; cursor: pointer; font-family: 'IBM Plex Sans';
+  }
+  .gender-btn .art { font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 15px; display: block; }
+  .gender-btn .sub { font-size: 10.5px; opacity: 0.85; }
+
+  .gb-blue { background: #E6F1FB; color: #0C447C; }
+  .gb-blue.selected { border-color: #185FA5; background: #185FA5; color: #fff; }
+  .gb-pink { background: #FBEAF0; color: #72243E; }
+  .gb-pink.selected { border-color: #993556; background: #993556; color: #fff; }
+  .gb-black { background: #E9E8E1; color: #232220; }
+  .gb-black.selected { border-color: #1C1B19; background: #1C1B19; color: #fff; }
+
+  button.primary {
+    width: 100%; padding: 13px; border-radius: 10px; border: none;
+    background: #1C1B19; color: #F4F3EC; font-size: 15px; font-weight: 500;
+    font-family: 'IBM Plex Sans'; cursor: pointer;
+  }
+  button.primary:disabled { background: #C9C8BC; cursor: not-allowed; }
+  button.primary:active:not(:disabled) { transform: scale(0.99); }
+
+  .msg { font-size: 13px; padding: 8px 0; text-align: center; }
+  .msg.ok { color: #2F8F5B; }
+  .msg.err { color: #C1443B; }
+
+  .word-list-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid #ECEBE2;
+  }
+  .word-list-item:last-child { border-bottom: none; }
+  .word-list-item img { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+  .word-list-item .info { flex: 1; min-width: 0; }
+  .word-list-item .info .w { font-size: 14.5px; font-weight: 500; }
+  .word-list-item .info .g { font-size: 12px; color: #8A8980; }
+  .swatch { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+  .sw-blue { background: #185FA5; }
+  .sw-pink { background: #993556; }
+  .sw-black { background: #1C1B19; }
+  .del-btn { border: none; background: none; color: #B8B6A9; font-size: 18px; cursor: pointer; padding: 4px 6px; }
+  .del-btn:hover { color: #C1443B; }
+
+  .empty-state { text-align: center; padding: 2.5rem 1rem; color: #8A8980; font-size: 14px; }
+
+  .quiz-photo-wrap { text-align: center; margin-bottom: 1rem; }
+  .quiz-photo-wrap img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; }
+  .case-tag {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px;
+    letter-spacing: 0.03em; text-transform: uppercase; color: #6B6A63;
+    background: #E9E8E1; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px;
+  }
+  .quiz-sentence { font-size: 16.5px; margin: 0 0 1.1rem; line-height: 1.5; }
+  .quiz-sentence .blank {
+    display: inline-block; min-width: 46px; border-bottom: 2px solid #C9C8BC;
+    text-align: center; font-weight: 500;
+  }
+  .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1rem; }
+  .opt-btn {
+    padding: 11px 4px; border-radius: 9px; border: 1.5px solid #DEDDD3;
+    background: #FAF9F4; font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    font-weight: 500; cursor: pointer; color: #232220;
+  }
+  .opt-btn.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .opt-btn.wrong { background: #FCEBEB; border-color: #E24B4A; color: #791F1F; }
+  .opt-btn:disabled { cursor: default; }
+
+  .feedback { font-size: 14px; padding: 10px 12px; border-radius: 9px; margin-bottom: 1rem; }
+  .feedback.correct { background: #EAF3DE; color: #27500A; }
+  .feedback.wrong { background: #FCEBEB; color: #791F1F; }
+
+  .score-row { display: flex; justify-content: space-between; font-size: 12.5px; color: #8A8980; margin-bottom: 1rem; }
+
+  .next-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid #1C1B19; background: transparent; color: #1C1B19; font-size: 14px; font-weight: 500; cursor: pointer; }
+
+  .summary-stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ECEBE2; font-size: 13.5px; }
+  .summary-stat:last-child { border-bottom: none; }
+  .summary-stat .lbl { color: #6B6A63; }
+  .summary-stat .val { font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Wortkarten</h1>
+    <p>Photo it, tag der/die/das, drill the cases.</p>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="add" class="active">Add word</button>
+    <button data-tab="practice">Practice</button>
+    <button data-tab="list">My words</button>
+  </nav>
+
+  <div class="panel active" id="panel-add">
+    <div class="card">
+      <label class="field-label">Photo</label>
+      <div class="photo-input-area" id="photoArea">
+        <div id="photoPlaceholder">
+          <div style="font-size:28px;">+</div>
+          <div class="hint">Tap to take or choose a photo</div>
+        </div>
+        <img id="photoPreview" style="display:none;">
+        <input type="file" accept="image/*" capture="environment" id="photoInput">
+      </div>
+
+      <label class="field-label">German word</label>
+      <input type="text" id="wordInput" placeholder="e.g. Tisch">
+
+      <label class="field-label">Gender — tap to tag</label>
+      <div class="gender-row">
+        <div class="gender-btn gb-blue" data-g="masc"><span class="art">der</span><span class="sub">masculine</span></div>
+        <div class="gender-btn gb-pink" data-g="fem"><span class="art">die</span><span class="sub">feminine</span></div>
+        <div class="gender-btn gb-black" data-g="neut"><span class="art">das</span><span class="sub">neuter</span></div>
+      </div>
+
+      <button class="primary" id="saveBtn" disabled>Save word</button>
+      <div class="msg" id="saveMsg"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-practice">
+    <div id="practiceArea"></div>
+  </div>
+
+  <div class="panel" id="panel-list">
+    <div class="card" id="listCard">
+      <div class="empty-state">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DECL = {
+  masc: { nom: 'der', akk: 'den', dat: 'dem', gen: 'des' },
+  fem:  { nom: 'die', akk: 'die', dat: 'der', gen: 'der' },
+  neut: { nom: 'das', akk: 'das', dat: 'dem', gen: 'des' }
+};
+const GENDER_LABEL = { masc: 'der', fem: 'die', neut: 'das' };
+const GENDER_SWATCH = { masc: 'sw-blue', fem: 'sw-pink', neut: 'sw-black' };
+const CASE_LIST = ['nom', 'akk', 'dat', 'gen'];
+const CASE_NAMES = { nom: 'Nominativ', akk: 'Akkusativ', dat: 'Dativ', gen: 'Genitiv' };
+const CASE_TEMPLATE = {
+  nom: (art, w) => `${cap(art)} ${w} ist hier.`,
+  akk: (art, w) => `Ich sehe ${art} ${w}.`,
+  dat: (art, w) => `Ich spreche mit ${art} ${w}.`,
+  gen: (art, w) => `Die Farbe ${art} ${w} gefällt mir.`
+};
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+const LADDER_DAYS = [1, 3, 7, 14];
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+function newCaseState() {
+  return { stage: -1, nextDue: todayStr(), correctCount: 0, wrongCount: 0 };
+}
+
+function nextInterval(stage) {
+  if (stage < LADDER_DAYS.length - 1) {
+    return { stage: stage + 1, days: LADDER_DAYS[stage + 1] };
+  }
+  const lastDays = LADDER_DAYS[LADDER_DAYS.length - 1];
+  const randomDays = Math.round(lastDays * (1.4 + Math.random() * 1.2));
+  return { stage: stage + 1, days: Math.min(randomDays, 90) };
+}
+
+let db = null;
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('wortkarten-db', 1);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('words')) {
+        d.createObjectStore('words', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => reject(e);
+  });
+}
+function dbGetAll() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('words', 'readonly');
+    const store = tx.objectStore('words');
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = (e) => reject(e);
+  });
+}
+function dbPut(entry) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('words', 'readwrite');
+    tx.objectStore('words').put(entry);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e);
+  });
+}
+function dbDelete(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('words', 'readwrite');
+    tx.objectStore('words').delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e);
+  });
+}
+
+let words = [];
+let selectedGender = null;
+let photoDataUrl = null;
+
+async function loadWords() {
+  words = await dbGetAll();
+  renderList();
+}
+
+document.querySelectorAll('nav.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'practice') startSession();
+    if (btn.dataset.tab === 'list') renderList();
+  });
+});
+
+document.getElementById('photoInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    img.onload = () => {
+      const maxW = 480;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      photoDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+      document.getElementById('photoPreview').src = photoDataUrl;
+      document.getElementById('photoPreview').style.display = 'block';
+      document.getElementById('photoPlaceholder').style.display = 'none';
+      checkSaveReady();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.querySelectorAll('.gender-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedGender = btn.dataset.g;
+    checkSaveReady();
+  });
+});
+
+document.getElementById('wordInput').addEventListener('input', checkSaveReady);
+
+function checkSaveReady() {
+  const word = document.getElementById('wordInput').value.trim();
+  const ready = word.length > 0 && selectedGender && photoDataUrl;
+  document.getElementById('saveBtn').disabled = !ready;
+}
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const word = document.getElementById('wordInput').value.trim();
+  const cases = {};
+  CASE_LIST.forEach(c => { cases[c] = newCaseState(); });
+  const entry = {
+    id: Date.now().toString(),
+    word,
+    gender: selectedGender,
+    photo: photoDataUrl,
+    createdAt: new Date().toISOString(),
+    cases
+  };
+  await dbPut(entry);
+  words.push(entry);
+  const msgEl = document.getElementById('saveMsg');
+  msgEl.textContent = `Saved — ${GENDER_LABEL[selectedGender]} ${word}`;
+  msgEl.className = 'msg ok';
+
+  document.getElementById('wordInput').value = '';
+  selectedGender = null;
+  photoDataUrl = null;
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('photoPlaceholder').style.display = 'block';
+  document.getElementById('saveBtn').disabled = true;
+  setTimeout(() => { msgEl.textContent = ''; }, 2500);
+});
+
+function renderList() {
+  const card = document.getElementById('listCard');
+  if (words.length === 0) {
+    card.innerHTML = '<div class="empty-state">No words yet. Add your first one in the Add word tab.</div>';
+    return;
+  }
+  card.innerHTML = words.slice().reverse().map(w => `
+    <div class="word-list-item" data-id="${w.id}">
+      <img src="${w.photo}">
+      <div class="info">
+        <div class="w"><span class="swatch ${GENDER_SWATCH[w.gender]}"></span>${GENDER_LABEL[w.gender]} ${w.word}</div>
+        <div class="g">${w.gender === 'masc' ? 'masculine' : w.gender === 'fem' ? 'feminine' : 'neuter'}</div>
+      </div>
+      <button class="del-btn" data-del="${w.id}">×</button>
+    </div>
+  `).join('');
+  card.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await dbDelete(btn.dataset.del);
+      words = words.filter(w => w.id !== btn.dataset.del);
+      renderList();
+    });
+  });
+}
+
+let sessionQueue = [];
+let retryPool = [];
+let currentItem = null;
+let sessionStats = { total: 0, correct: 0, byWord: {}, byCase: {} };
+
+function buildQueue() {
+  const today = todayStr();
+  const due = [];
+  words.forEach(w => {
+    CASE_LIST.forEach(c => {
+      if (w.cases[c].nextDue <= today) {
+        due.push({ wordId: w.id, c });
+      }
+    });
+  });
+  for (let i = due.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [due[i], due[j]] = [due[j], due[i]];
+  }
+  return due;
+}
+
+function startSession() {
+  sessionQueue = buildQueue();
+  retryPool = [];
+  sessionStats = { total: 0, correct: 0, byWord: {}, byCase: {} };
+  nextCard();
+}
+
+function nextCard() {
+  if (sessionQueue.length === 0 && retryPool.length > 0) {
+    sessionQueue = retryPool;
+    retryPool = [];
+  }
+  if (sessionQueue.length === 0) {
+    renderSummary();
+    return;
+  }
+  currentItem = sessionQueue.shift();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const w = words.find(x => x.id === currentItem.wordId);
+  if (!w) { nextCard(); return; }
+  const c = currentItem.c;
+  const correctArt = DECL[w.gender][c];
+  const allForms = ['der', 'die', 'das', 'den', 'dem', 'des'];
+  const distractors = shuffle(allForms.filter(f => f !== correctArt));
+  const options = shuffle([correctArt, distractors[0], distractors[1]]);
+
+  const sentence = CASE_TEMPLATE[c]('___', w.word);
+  const parts = sentence.split('___');
+
+  const remaining = sessionQueue.length + retryPool.length + 1;
+  const area = document.getElementById('practiceArea');
+  area.innerHTML = `
+    <div class="score-row">
+      <span>Session: ${sessionStats.correct}/${sessionStats.total}</span>
+      <span>${remaining} card${remaining === 1 ? '' : 's'} left today</span>
+    </div>
+    <div class="card">
+      <div class="quiz-photo-wrap"><img src="${w.photo}"></div>
+      <div class="case-tag">${CASE_NAMES[c]}</div>
+      <p class="quiz-sentence">${parts[0]}<span class="blank" id="blankSlot">___</span>${parts[1]}</p>
+      <div class="options-grid" id="optsGrid">
+        ${options.map(o => `<button class="opt-btn" data-opt="${o}">${o}</button>`).join('')}
+      </div>
+      <div id="feedbackSlot"></div>
+      <button class="next-btn" id="nextBtn" style="display:none;">Next card →</button>
+    </div>
+  `;
+  document.querySelectorAll('.opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => handleAnswer(btn.dataset.opt, w, c, correctArt));
+  });
+}
+
+async function handleAnswer(chosen, w, c, correctArt) {
+  const isCorrect = chosen === correctArt;
+  sessionStats.total++;
+  if (isCorrect) sessionStats.correct++;
+
+  sessionStats.byWord[w.id] = sessionStats.byWord[w.id] || { word: w.word, attempts: 0 };
+  sessionStats.byWord[w.id].attempts++;
+  sessionStats.byCase[c] = sessionStats.byCase[c] || { correct: 0, total: 0 };
+  sessionStats.byCase[c].total++;
+  if (isCorrect) sessionStats.byCase[c].correct++;
+
+  document.querySelectorAll('.opt-btn').forEach(btn => {
+    btn.disabled = true;
+    if (btn.dataset.opt === correctArt) btn.classList.add('correct');
+    else if (btn.dataset.opt === chosen) btn.classList.add('wrong');
+  });
+  document.getElementById('blankSlot').textContent = correctArt;
+
+  const fb = document.getElementById('feedbackSlot');
+  fb.innerHTML = `<div class="feedback ${isCorrect ? 'correct' : 'wrong'}">
+    ${isCorrect ? 'Right.' : 'Not quite — this one will come back later today.'}
+    ${GENDER_LABEL[w.gender]} ${w.word} → ${CASE_NAMES[c]}: <strong>${correctArt} ${w.word}</strong>
+  </div>`;
+
+  const caseState = w.cases[c];
+  if (isCorrect) {
+    const { stage, days } = nextInterval(caseState.stage);
+    caseState.stage = stage;
+    caseState.correctCount++;
+    caseState.nextDue = new Date(Date.now() + days * DAY_MS).toISOString().slice(0, 10);
+  } else {
+    caseState.stage = -1;
+    caseState.wrongCount++;
+    caseState.nextDue = todayStr();
+    retryPool.push({ wordId: w.id, c });
+    if (retryPool.length >= 2) {
+      const insertAt = Math.min(2, sessionQueue.length);
+      sessionQueue.splice(insertAt, 0, retryPool.shift());
+    }
+  }
+  await dbPut(w);
+
+  document.getElementById('nextBtn').style.display = 'block';
+  document.getElementById('nextBtn').onclick = nextCard;
+}
+
+function renderSummary() {
+  const area = document.getElementById('practiceArea');
+  if (sessionStats.total === 0) {
+    area.innerHTML = '<div class="card"><div class="empty-state">Nothing due right now. Add words or come back after their next interval.</div></div>';
+    return;
+  }
+  let worstWord = null;
+  Object.values(sessionStats.byWord).forEach(w => {
+    if (!worstWord || w.attempts > worstWord.attempts) worstWord = w;
+  });
+  let worstCase = null;
+  Object.entries(sessionStats.byCase).forEach(([c, s]) => {
+    const acc = s.correct / s.total;
+    if (!worstCase || acc < worstCase.acc) worstCase = { c, acc, total: s.total };
+  });
+
+  area.innerHTML = `
+    <div class="card">
+      <h2 style="font-size:17px; margin-bottom: 12px;">All done for today</h2>
+      <div class="summary-stat"><span class="lbl">Cards reviewed</span><span class="val">${sessionStats.total}</span></div>
+      <div class="summary-stat"><span class="lbl">Accuracy</span><span class="val">${Math.round(sessionStats.correct / sessionStats.total * 100)}%</span></div>
+      ${worstWord ? `<div class="summary-stat"><span class="lbl">Most attempts</span><span class="val">${worstWord.word} (${worstWord.attempts})</span></div>` : ''}
+      ${worstCase ? `<div class="summary-stat"><span class="lbl">Weakest case</span><span class="val">${CASE_NAMES[worstCase.c]} (${Math.round(worstCase.acc * 100)}%)</span></div>` : ''}
+    </div>
+  `;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+openDB().then((d) => { db = d; loadWords(); });
+</script>
+</body>
+</html>
