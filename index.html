@@ -115,6 +115,8 @@
   .home-header { padding: 1.75rem 0 1.75rem; text-align: center; }
   .home-header h1 { font-size: 23px; letter-spacing: -0.01em; }
   .home-status { margin: 8px 0 0; font-size: 13.5px; color: #6B6A63; }
+  .home-streak { margin: 6px 0 0; font-size: 14px; color: #232220; font-weight: 600; }
+  .home-encouragement { margin: 6px 0 0; font-size: 13.5px; font-style: italic; font-weight: 700; color: #3A3934; }
   .menu-stack { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
   .pill { position: relative; width: 100%; max-width: 300px; background: #FFFFFF; border: 1px solid #DEDDD3; border-radius: 999px; padding: 15px 1rem; text-align: center; cursor: pointer; font-size: 15px; font-weight: 500; }
   .due-badge { position: absolute; bottom: -6px; right: 10px; background: #1C1B19; color: #FAEEDA; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; display: none; }
@@ -164,7 +166,9 @@
   <div class="screen" id="screen-home">
     <div class="home-header">
       <h1 id="homeGreeting">Hello</h1>
+      <p class="home-streak" id="homeStreak"></p>
       <p class="home-status" id="homeStatus"></p>
+      <p class="home-encouragement" id="homeEncouragement"></p>
     </div>
     <div class="menu-stack">
       <div class="pill" data-go="add">Add words</div>
@@ -235,7 +239,7 @@
   <div class="screen" id="screen-stats">
     <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
     <div class="card">
-      <div class="streak-hero"><div class="num" id="streakNum">0</div><div class="lbl">day streak</div></div>
+      <div class="streak-hero"><div class="num" id="streakNum">0 🔥</div><div class="lbl">day streak</div></div>
       <div class="summary-stat"><span class="lbl">Best streak</span><span class="val" id="bestStreakVal">0</span></div>
       <div class="summary-stat"><span class="lbl">Words in deck</span><span class="val" id="totalWordsVal">0</span></div>
       <div class="summary-stat"><span class="lbl">Cards reviewed (all time)</span><span class="val" id="totalReviewsVal">0</span></div>
@@ -252,6 +256,17 @@
       <label class="field-label">Your name</label>
       <input type="text" id="settingsName">
       <button class="primary" id="settingsSaveName">Save name</button>
+    </div>
+    <div class="card">
+      <label class="field-label">Mode — cases to practice</label>
+      <div class="gender-row" id="caseToggleRow">
+        <div class="diff-btn" data-case="nom">Nominativ</div>
+        <div class="diff-btn" data-case="akk">Akkusativ</div>
+      </div>
+      <div class="gender-row">
+        <div class="diff-btn" data-case="dat">Dativ</div>
+        <div class="diff-btn" data-case="gen">Genitiv</div>
+      </div>
     </div>
     <div class="card">
       <label class="field-label">Reference</label>
@@ -450,6 +465,13 @@ function dbClear(store) {
 let words = [];
 let userMeta = null;
 let statsMeta = null;
+let activeCases = ['nom', 'akk', 'dat', 'gen'];
+
+function renderCaseToggles() {
+  document.querySelectorAll('[data-case]').forEach(btn => {
+    btn.classList.toggle('selected', activeCases.includes(btn.dataset.case));
+  });
+}
 
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -459,7 +481,7 @@ function showScreen(name) {
   if (name === 'practice') startSession();
   if (name === 'produce') renderProduce();
   if (name === 'stats') renderStats();
-  if (name === 'settings') { document.getElementById('settingsName').value = userMeta ? userMeta.name : ''; }
+  if (name === 'settings') { document.getElementById('settingsName').value = userMeta ? userMeta.name : ''; renderCaseToggles(); }
 }
 document.querySelectorAll('[data-go]').forEach(el => { el.addEventListener('click', () => showScreen(el.dataset.go)); });
 document.getElementById('goSettings').addEventListener('click', () => showScreen('settings'));
@@ -479,6 +501,20 @@ document.getElementById('settingsSaveName').addEventListener('click', async () =
   showScreen('home');
 });
 
+document.querySelectorAll('[data-case]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const c = btn.dataset.case;
+    if (activeCases.includes(c)) {
+      if (activeCases.length === 1) return;
+      activeCases = activeCases.filter(x => x !== c);
+    } else {
+      activeCases = [...activeCases, c];
+    }
+    renderCaseToggles();
+    await dbPut('meta', { id: 'appSettings', activeCases });
+  });
+});
+
 let resetStage = 0;
 document.getElementById('resetBtn').addEventListener('click', async () => {
   const msg = document.getElementById('resetMsg');
@@ -487,7 +523,7 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
   else if (resetStage === 2) { msg.className = 'msg err'; msg.textContent = 'Really sure? Tap once more to permanently reset.'; }
   else {
     await dbClear('words'); await dbClear('meta');
-    words = []; userMeta = null; statsMeta = null; sentenceBank = []; resetStage = 0; msg.textContent = '';
+    words = []; userMeta = null; statsMeta = null; sentenceBank = []; activeCases = ['nom', 'akk', 'dat', 'gen']; resetStage = 0; msg.textContent = '';
     showScreen('onboard');
   }
 });
@@ -495,14 +531,16 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
 function renderHome() {
   const line = ENCOURAGEMENT[Math.floor(Math.random() * ENCOURAGEMENT.length)];
   document.getElementById('homeGreeting').textContent = `Hello, ${userMeta ? userMeta.name : ''}`;
+  document.getElementById('homeStreak').textContent = `${statsMeta.streakCurrent || 0} 🔥 day streak`;
+  document.getElementById('homeEncouragement').textContent = line;
   const due = buildQueue();
   const doneToday = statsMeta && statsMeta.lastCompletedDate === todayStr();
   const statusEl = document.getElementById('homeStatus');
   const badge = document.getElementById('dueBadge');
   if (words.length === 0) { statusEl.textContent = 'Add your first word to get started.'; badge.style.display = 'none'; }
-  else if (doneToday) { statusEl.textContent = `Today's task is done. ${line}`; badge.style.display = 'none'; }
-  else if (due.length > 0) { statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today. ${line}`; badge.textContent = `${due.length} due`; badge.style.display = 'block'; }
-  else { statusEl.textContent = `Nothing due right now. ${line}`; badge.style.display = 'none'; }
+  else if (doneToday) { statusEl.textContent = "Today's task is done."; badge.style.display = 'none'; }
+  else if (due.length > 0) { statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today.`; badge.textContent = `${due.length} due`; badge.style.display = 'block'; }
+  else { statusEl.textContent = 'Nothing due right now.'; badge.style.display = 'none'; }
 }
 
 document.getElementById('previewSpeak').addEventListener('click', () => {
@@ -639,7 +677,7 @@ let sessionStats = { total: 0, correct: 0, byWord: {}, byCase: {} };
 function buildQueue() {
   const today = todayStr();
   const due = [];
-  words.forEach(w => { CASE_LIST.forEach(c => { if (w.cases[c].nextDue <= today) due.push({ wordId: w.id, c }); }); });
+  words.forEach(w => { CASE_LIST.forEach(c => { if (activeCases.includes(c) && w.cases[c].nextDue <= today) due.push({ wordId: w.id, c }); }); });
   for (let i = due.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [due[i], due[j]] = [due[j], due[i]]; }
   return due;
 }
@@ -788,7 +826,7 @@ async function finishSession() {
 }
 
 function renderStats() {
-  document.getElementById('streakNum').textContent = statsMeta.streakCurrent || 0;
+  document.getElementById('streakNum').textContent = `${statsMeta.streakCurrent || 0} 🔥`;
   document.getElementById('bestStreakVal').textContent = statsMeta.streakBest || 0;
   document.getElementById('totalWordsVal').textContent = words.length;
   document.getElementById('totalReviewsVal').textContent = statsMeta.totalReviews || 0;
@@ -970,6 +1008,8 @@ async function init() {
   statsMeta = await dbGet('meta', 'stats');
   const bankRecord = await dbGet('meta', 'sentenceBank');
   if (bankRecord && bankRecord.pairs) sentenceBank = bankRecord.pairs;
+  const settingsRecord = await dbGet('meta', 'appSettings');
+  if (settingsRecord && settingsRecord.activeCases && settingsRecord.activeCases.length) activeCases = settingsRecord.activeCases;
   if (!statsMeta) { statsMeta = { id: 'stats', streakCurrent: 0, streakBest: 0, lastCompletedDate: null, totalReviews: 0 }; await dbPut('meta', statsMeta); }
   if (!userMeta) showScreen('onboard'); else showScreen('home');
 }
