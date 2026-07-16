@@ -152,6 +152,7 @@
   .chip-missing { background: #FCEBEB; color: #791F1F; }
   .chip-extra { background: #FAEEDA; color: #633806; }
   .manage-link { text-align: center; font-size: 12.5px; color: #8A8980; padding: 12px 0 0; cursor: pointer; }
+  .skip-link { text-align: center; font-size: 12.5px; color: #8A8980; cursor: pointer; padding: 8px 0 18px; }
 
   .spell-overlay-wrap { position: relative; margin-bottom: 0.5rem; }
   .spell-overlay-wrap input { position: absolute; inset: 0; opacity: 0; border: none; padding: 0; margin: 0; width: 100%; height: 100%; font-size: 16px; background: transparent; }
@@ -207,7 +208,7 @@
       <p class="home-streak" id="sentenceStreakLine"></p>
     </div>
     <div class="menu-stack">
-      <div class="pill" data-go="produce">English → German</div>
+      <div class="pill" data-go="produce">English → German<span class="due-badge" id="produceDueBadge"></span></div>
       <div class="pill" data-go="stats-sentence">Stats</div>
     </div>
     <div class="settings-link" data-go="settings">Settings</div>
@@ -605,6 +606,14 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
   }
 });
 
+function noDueMessageHTML() {
+  const name = userMeta ? userMeta.name : '';
+  return `<div class="card"><div class="empty-state" style="text-align:center;">
+    Nothing due right now.<br>Good job, ${name}.<br><br>
+    Add more or come back after their next interval.
+  </div></div>`;
+}
+
 function renderHome() {
   const line = ENCOURAGEMENT[Math.floor(Math.random() * ENCOURAGEMENT.length)];
   document.getElementById('homeGreeting').textContent = `Hello, ${userMeta ? userMeta.name : ''}`;
@@ -623,8 +632,8 @@ function renderVocabHub() {
   const badge = document.getElementById('dueBadge');
   streakEl.textContent = `${statsMeta ? (statsMeta.streakCurrent || 0) : 0} 🔥 day streak`;
   if (words.length === 0) { statusEl.textContent = 'Add your first word to get started.'; badge.style.display = 'none'; }
-  else if (doneToday) { statusEl.textContent = "Today's task is done."; badge.style.display = 'none'; }
   else if (due.length > 0) { statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today.`; badge.textContent = `${due.length} due`; badge.style.display = 'block'; }
+  else if (doneToday) { statusEl.textContent = "Today's task is done."; badge.textContent = 'Completed'; badge.style.display = 'block'; }
   else { statusEl.textContent = 'Nothing due right now.'; badge.style.display = 'none'; }
 
   const spellDue = buildSpellQueue();
@@ -638,6 +647,13 @@ function renderVocabHub() {
 
 function renderSentenceHub() {
   document.getElementById('sentenceStreakLine').textContent = `${statsSentence ? (statsSentence.streakCurrent || 0) : 0} 🔥 day streak`;
+  const badge = document.getElementById('produceDueBadge');
+  if (sentenceBank.length === 0) { badge.style.display = 'none'; return; }
+  const due = buildSentenceQueue();
+  const doneToday = statsSentence && statsSentence.lastCompletedDate === todayStr();
+  if (due.length > 0) { badge.textContent = `${due.length} due`; badge.style.display = 'block'; }
+  else if (doneToday) { badge.textContent = 'Completed'; badge.style.display = 'block'; }
+  else { badge.style.display = 'none'; }
 }
 
 document.getElementById('previewSpeak').addEventListener('click', () => {
@@ -890,7 +906,7 @@ async function handleAnswer(chosen, w, c, correctArt) {
 
 async function finishSession() {
   const area = document.getElementById('practiceArea');
-  if (sessionStats.total === 0) { area.innerHTML = '<div class="card"><div class="empty-state">Nothing due right now. Add words or come back after their next interval.</div></div>'; return; }
+  if (sessionStats.total === 0) { area.innerHTML = noDueMessageHTML(); return; }
   let worstWord = null;
   Object.values(sessionStats.byWord).forEach(w => { if (!worstWord || w.attempts > worstWord.attempts) worstWord = w; });
   let worstCase = null;
@@ -975,7 +991,7 @@ async function nextSpellCard() {
       statsMeta.spellingLastCompletedDate = today;
       await dbPut('meta', statsMeta);
     }
-    document.getElementById('spellingArea').innerHTML = '<div class="card"><div class="empty-state">All spelling words done for today. Come back tomorrow for more.</div></div>';
+    document.getElementById('spellingArea').innerHTML = noDueMessageHTML();
     return;
   }
   const wordId = spellQueue.shift();
@@ -1002,7 +1018,7 @@ function renderSpellCard(w) {
         <div class="spell-boxes" id="spellBoxes"></div>
         <input type="text" id="spellInput" maxlength="${w.word.length}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       </div>
-      <div class="manage-link" id="skipWordLink" style="padding-top:4px;">Skip word</div>
+      <div class="skip-link" id="skipWordLink">Skip word</div>
       <button class="primary" id="checkSpellBtn" disabled>Check</button>
       <div id="spellFeedback"></div>
     </div>
@@ -1120,7 +1136,7 @@ function parseSentenceBank(text) {
     const de = (r[1] || '').trim();
     if (!en || !de) return;
     if (i === 0 && en.toLowerCase() === 'english' && de.toLowerCase() === 'german') return;
-    pairs.push({ en, de });
+    pairs.push({ id: 'p' + i + '_' + Date.now(), en, de });
   });
   return pairs;
 }
@@ -1144,6 +1160,27 @@ function scoreAnswer(userText, correctText) {
   return { pct, missing, extra: userPool, matched, total: correctWords.length };
 }
 
+let produceQueue = [], produceRetryPool = [];
+
+function ensureSentenceState(p) {
+  if (!p.schedule) p.schedule = newCaseState();
+}
+
+function buildSentenceQueue() {
+  const today = todayStr();
+  const due = [];
+  sentenceBank.forEach(p => {
+    ensureSentenceState(p);
+    if (p.schedule.nextDue <= today) due.push(p.id);
+  });
+  for (let i = due.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [due[i], due[j]] = [due[j], due[i]]; }
+  return due;
+}
+
+async function saveSentenceBank() {
+  await dbPut('meta', { id: 'sentenceBank', pairs: sentenceBank });
+}
+
 function renderProduce() {
   const area = document.getElementById('produceArea');
   if (sentenceBank.length === 0) {
@@ -1160,7 +1197,9 @@ function renderProduce() {
     document.getElementById('bankUpload').addEventListener('change', handleBankUpload);
     return;
   }
-  showProduceQuestion();
+  produceQueue = buildSentenceQueue();
+  produceRetryPool = [];
+  nextProduceCard();
 }
 
 async function handleBankUpload(e) {
@@ -1174,15 +1213,37 @@ async function handleBankUpload(e) {
     return;
   }
   sentenceBank = pairs;
-  await dbPut('meta', { id: 'sentenceBank', pairs });
+  await saveSentenceBank();
+  produceQueue = buildSentenceQueue();
+  produceRetryPool = [];
+  nextProduceCard();
+}
+
+async function nextProduceCard() {
+  if (produceQueue.length === 0 && produceRetryPool.length > 0) { produceQueue = produceRetryPool; produceRetryPool = []; }
+  if (produceQueue.length === 0) {
+    const today = todayStr();
+    if (statsSentence.lastCompletedDate !== today) {
+      if (statsSentence.lastCompletedDate === yesterdayStr()) statsSentence.streakCurrent = (statsSentence.streakCurrent || 0) + 1;
+      else statsSentence.streakCurrent = 1;
+      statsSentence.streakBest = Math.max(statsSentence.streakBest || 0, statsSentence.streakCurrent);
+      statsSentence.lastCompletedDate = today;
+      await dbPut('meta', statsSentence);
+    }
+    document.getElementById('produceArea').innerHTML = noDueMessageHTML();
+    return;
+  }
+  const id = produceQueue.shift();
+  currentProduceItem = sentenceBank.find(p => p.id === id);
+  if (!currentProduceItem) { nextProduceCard(); return; }
   showProduceQuestion();
 }
 
 function showProduceQuestion() {
-  currentProduceItem = sentenceBank[Math.floor(Math.random() * sentenceBank.length)];
+  const remaining = produceQueue.length + produceRetryPool.length + 1;
   const area = document.getElementById('produceArea');
   area.innerHTML = `
-    <p class="list-count">${sentenceBank.length} sentence${sentenceBank.length === 1 ? '' : 's'} in your bank</p>
+    <p class="list-count">${remaining} sentence${remaining === 1 ? '' : 's'} left today</p>
     <div class="card">
       <label class="field-label">Translate to German</label>
       <p class="produce-en">${currentProduceItem.en}</p>
@@ -1203,6 +1264,7 @@ async function checkProduceAnswer() {
   const userText = document.getElementById('produceInput').value.trim();
   if (!userText) return;
   const result = scoreAnswer(userText, currentProduceItem.de);
+  const isFullyCorrect = result.pct === 100;
   const area = document.getElementById('produceArea');
   area.innerHTML = `
     <div class="card">
@@ -1211,19 +1273,26 @@ async function checkProduceAnswer() {
       <p class="produce-en"><strong>${currentProduceItem.de}</strong></p>
       ${result.missing.length ? `<label class="field-label">You missed</label><div class="word-chip-row">${result.missing.map(w => `<span class="word-chip chip-missing">${w}</span>`).join('')}</div>` : ''}
       ${result.extra.length ? `<label class="field-label">Not expected</label><div class="word-chip-row">${result.extra.map(w => `<span class="word-chip chip-extra">${w}</span>`).join('')}</div>` : ''}
+      ${isFullyCorrect ? '' : '<div class="fb-line" style="text-align:center;">This one will come back later today.</div>'}
       <button class="next-btn" id="produceNextBtn" style="margin-top: 0.5rem;">Next sentence →</button>
     </div>
   `;
   document.getElementById('speakCorrectBtn').addEventListener('click', () => speak(currentProduceItem.de));
-  document.getElementById('produceNextBtn').addEventListener('click', showProduceQuestion);
+  document.getElementById('produceNextBtn').addEventListener('click', nextProduceCard);
 
-  const today = todayStr();
-  if (statsSentence.lastCompletedDate !== today) {
-    if (statsSentence.lastCompletedDate === yesterdayStr()) statsSentence.streakCurrent = (statsSentence.streakCurrent || 0) + 1;
-    else statsSentence.streakCurrent = 1;
-    statsSentence.streakBest = Math.max(statsSentence.streakBest || 0, statsSentence.streakCurrent);
-    statsSentence.lastCompletedDate = today;
+  ensureSentenceState(currentProduceItem);
+  if (isFullyCorrect) {
+    const { stage, days } = nextInterval(currentProduceItem.schedule.stage);
+    currentProduceItem.schedule.stage = stage;
+    currentProduceItem.schedule.nextDue = new Date(Date.now() + days * DAY_MS).toISOString().slice(0, 10);
+  } else {
+    currentProduceItem.schedule.stage = -1;
+    currentProduceItem.schedule.nextDue = todayStr();
+    produceRetryPool.push(currentProduceItem.id);
+    if (produceRetryPool.length >= 2) { const insertAt = Math.min(2, produceQueue.length); produceQueue.splice(insertAt, 0, produceRetryPool.shift()); }
   }
+  await saveSentenceBank();
+
   statsSentence.totalReviews = (statsSentence.totalReviews || 0) + 1;
   statsSentence.lastSession = { score: result.pct, en: currentProduceItem.en, de: currentProduceItem.de };
   await dbPut('meta', statsSentence);
