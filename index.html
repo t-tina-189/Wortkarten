@@ -93,7 +93,9 @@
   .wb-photo-wrap { position: relative; margin-bottom: 6px; cursor: pointer; }
   .wb-photo-wrap img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; display: block; }
   .wb-del { position: absolute; top: 3px; right: 3px; background: rgba(28,27,25,0.6); color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 13px; line-height: 1; cursor: pointer; }
-  .wb-word { font-size: 12.5px; font-weight: 600; line-height: 1.3; word-break: break-word; }
+  .wb-word { font-size: 12.5px; font-weight: 600; line-height: 1.25; word-break: break-word; overflow-wrap: break-word; hyphens: auto; }
+  .wb-word.wb-len-med { font-size: 11.5px; }
+  .wb-word.wb-len-long { font-size: 10.5px; }
   .wb-meaning { font-size: 12.5px; color: #232220; cursor: pointer; line-height: 1.3; word-break: break-word; }
   .del-btn { border: none; background: none; color: #8A8980; font-size: 18px; cursor: pointer; padding: 4px 6px; }
   .del-btn:hover { color: #C1443B; }
@@ -794,7 +796,7 @@ function renderList() {
         <span class="star-badge ${w.difficulty === 4 ? 'tier4' : ''}">${STAR_TEXT[w.difficulty] || ''}</span>
         <button class="wb-del" data-del="${w.id}">×</button>
       </div>
-      <div class="wb-word">${w.word}</div>
+      <div class="wb-word ${w.word.length > 13 ? 'wb-len-long' : w.word.length > 9 ? 'wb-len-med' : ''}" lang="de">${w.word}</div>
       <div class="wb-meaning" data-meaning-id="${w.id}">${w.meaning ? w.meaning : '— tap to add meaning'}</div>
     </div>
   `;
