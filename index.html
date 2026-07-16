@@ -82,6 +82,10 @@
 
   .quiz-photo-wrap { text-align: center; margin-bottom: 0.8rem; }
   .quiz-photo-wrap img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; }
+  .quiz-photo-frame { position: relative; margin-bottom: 0.8rem; }
+  .quiz-photo-frame img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; display: block; }
+  .star-badge-lg { position: absolute; bottom: 10px; right: 10px; background: #1C1B19; color: #FAEEDA; font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 8px; letter-spacing: 0.02em; }
+  .star-badge-lg.tier4 { background: linear-gradient(135deg,#BA7517,#F5D98A); color: #3A2200; }
   .case-tag { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: 0.03em; text-transform: uppercase; color: #6B6A63; background: #E9E8E1; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px; }
   .quiz-sentence { font-size: 16.5px; margin: 0 0 1.1rem; line-height: 1.5; text-align: center; }
   .quiz-sentence .blank { display: inline-block; min-width: 46px; border-bottom: 2px solid #C9C8BC; text-align: center; font-weight: 500; }
@@ -125,6 +129,24 @@
   .streak-hero .lbl { font-size: 13px; color: #6B6A63; }
   .ref-link { display: block; text-align: center; font-size: 13px; color: #185FA5; margin-top: 10px; }
   .list-count { text-align: center; font-size: 13px; color: #6B6A63; margin: 0 0 0.85rem; }
+
+  .upload-box { border: 1.5px dashed #C9C8BC; border-radius: 12px; padding: 1.5rem 1.2rem; text-align: center; background: #FAF9F4; position: relative; }
+  .upload-box input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-box .hint { font-size: 13px; color: #8A8980; margin-top: 8px; line-height: 1.5; }
+  .produce-en { font-size: 16.5px; text-align: center; margin: 0 0 1rem; line-height: 1.5; }
+  textarea.answer-input {
+    width: 100%; min-height: 80px; padding: 10px 12px; border-radius: 9px; border: 1px solid #D5D4C9;
+    font-size: 15px; font-family: inherit; background: #FAF9F4; margin-bottom: 1rem; resize: vertical;
+  }
+  textarea.answer-input:focus { outline: none; border-color: #232220; }
+  .score-hero { text-align: center; padding: 0.5rem 0 1rem; }
+  .score-hero .num { font-family: 'IBM Plex Serif', serif; font-size: 40px; font-weight: 600; }
+  .score-hero .lbl { font-size: 13px; color: #6B6A63; }
+  .word-chip-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 0.6rem; }
+  .word-chip { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; padding: 3px 9px; border-radius: 999px; }
+  .chip-missing { background: #FCEBEB; color: #791F1F; }
+  .chip-extra { background: #FAEEDA; color: #633806; }
+  .manage-link { text-align: center; font-size: 12.5px; color: #8A8980; padding: 12px 0 0; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -147,6 +169,7 @@
     <div class="menu-stack">
       <div class="pill" data-go="add">Add words</div>
       <div class="pill" data-go="practice">Practice now<span class="due-badge" id="dueBadge"></span></div>
+      <div class="pill" data-go="produce">Produce it</div>
       <div class="pill" data-go="list">My words</div>
       <div class="pill" data-go="stats">Stats</div>
     </div>
@@ -196,6 +219,11 @@
   <div class="screen" id="screen-practice">
     <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
     <div id="practiceArea"></div>
+  </div>
+
+  <div class="screen" id="screen-produce">
+    <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
+    <div id="produceArea"></div>
   </div>
 
   <div class="screen" id="screen-list">
@@ -429,6 +457,7 @@ function showScreen(name) {
   if (name === 'home') renderHome();
   if (name === 'list') renderList();
   if (name === 'practice') startSession();
+  if (name === 'produce') renderProduce();
   if (name === 'stats') renderStats();
   if (name === 'settings') { document.getElementById('settingsName').value = userMeta ? userMeta.name : ''; }
 }
@@ -458,7 +487,7 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
   else if (resetStage === 2) { msg.className = 'msg err'; msg.textContent = 'Really sure? Tap once more to permanently reset.'; }
   else {
     await dbClear('words'); await dbClear('meta');
-    words = []; userMeta = null; statsMeta = null; resetStage = 0; msg.textContent = '';
+    words = []; userMeta = null; statsMeta = null; sentenceBank = []; resetStage = 0; msg.textContent = '';
     showScreen('onboard');
   }
 });
@@ -648,7 +677,7 @@ function renderQuestion() {
   area.innerHTML = `
     <div class="score-row"><span>Session: ${sessionStats.correct}/${sessionStats.total}</span><span>${remaining} card${remaining === 1 ? '' : 's'} left today</span></div>
     <div class="card">
-      <div class="quiz-photo-wrap"><img src="${w.photo}"></div>
+      <div class="quiz-photo-frame"><img src="${w.photo}"><span class="star-badge-lg ${w.difficulty === 4 ? 'tier4' : ''}">${STAR_TEXT[w.difficulty] || ''}</span></div>
       <div style="text-align:center;"><div class="case-tag">${CASE_NAMES[c]}</div></div>
       <p class="quiz-sentence">${parts[0]}<span class="blank" id="blankSlot">___</span>${parts[1]}</p>
       <div class="options-grid" id="optsGrid">${options.map(o => `<button class="opt-btn" data-opt="${o}">${o}</button>`).join('')}</div>
@@ -684,15 +713,15 @@ async function handleAnswer(chosen, w, c, correctArt) {
 
   const fb = document.getElementById('feedbackSlot');
   fb.innerHTML = `<div class="feedback ${isCorrect ? 'correct' : 'wrong'}">
-    <div class="fb-line">${isCorrect ? 'Right.' : 'Not quite.'}</div>
-    <div class="fb-line"><span class="fb-label">Translation:</span> ${currentEnSentence}</div>
-    <div class="fb-line">${caseExplain}</div>
-    <div class="fb-line">It should be: <strong>${correctArt} ${w.word}</strong></div>
-    <div class="fb-sentence-row">
+    <div class="fb-line">${isCorrect ? 'Correct.' : 'Not quite.'}</div>
+    <div class="fb-sentence-row" style="border-top:none; padding-top:0; margin-top:0;">
       <span class="speak-inline" id="listenSentenceBtn">🔊</span>
       ${renderTappableSentence(currentFullSentence)}
     </div>
     <div class="gloss-panel" id="glossPanel">Tap a word above to hear it and see its meaning.</div>
+    <div class="fb-line"><span class="fb-label">Translation:</span> ${currentEnSentence}</div>
+    <div class="fb-line"><span class="fb-label">Solution:</span> ${correctArt} ${w.word}</div>
+    <div class="fb-line">${caseExplain}</div>
   </div>`;
 
   document.getElementById('listenSentenceBtn').addEventListener('click', () => speak(currentFullSentence));
@@ -776,6 +805,139 @@ function renderStats() {
   } else { lsCard.style.display = 'none'; }
 }
 
+let sentenceBank = [];
+let currentProduceItem = null;
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+      else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(field); field = '';
+        if (row.length > 1 || row[0] !== '') rows.push(row);
+        row = [];
+      } else field += c;
+    }
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function parseSentenceBank(text) {
+  const rows = parseCSV(text);
+  const pairs = [];
+  rows.forEach((r, i) => {
+    if (r.length < 2) return;
+    const en = (r[0] || '').trim();
+    const de = (r[1] || '').trim();
+    if (!en || !de) return;
+    if (i === 0 && en.toLowerCase() === 'english' && de.toLowerCase() === 'german') return;
+    pairs.push({ en, de });
+  });
+  return pairs;
+}
+
+function normalizeWords(s) {
+  return s.toLowerCase().replace(/[.,!?;:„"'()]/g, '').trim().split(/\s+/).filter(Boolean);
+}
+
+function scoreAnswer(userText, correctText) {
+  const userWords = normalizeWords(userText);
+  const correctWords = normalizeWords(correctText);
+  const userPool = [...userWords];
+  let matched = 0;
+  const missing = [];
+  correctWords.forEach(cw => {
+    const idx = userPool.indexOf(cw);
+    if (idx !== -1) { matched++; userPool.splice(idx, 1); }
+    else missing.push(cw);
+  });
+  const pct = correctWords.length ? Math.round((matched / correctWords.length) * 100) : 0;
+  return { pct, missing, extra: userPool, matched, total: correctWords.length };
+}
+
+function renderProduce() {
+  const area = document.getElementById('produceArea');
+  if (sentenceBank.length === 0) {
+    area.innerHTML = `
+      <div class="card">
+        <label class="field-label">Upload your sentence bank</label>
+        <div class="upload-box">
+          <div style="font-size:24px;">+</div>
+          <div class="hint">Upload a CSV with two columns — English, German — one sentence pair per row.</div>
+          <input type="file" accept=".csv,text/csv" id="bankUpload">
+        </div>
+      </div>
+    `;
+    document.getElementById('bankUpload').addEventListener('change', handleBankUpload);
+    return;
+  }
+  showProduceQuestion();
+}
+
+async function handleBankUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  const pairs = parseSentenceBank(text);
+  if (pairs.length === 0) {
+    const area = document.getElementById('produceArea');
+    area.innerHTML = '<div class="card"><div class="empty-state">Could not read any sentence pairs from that file. Make sure it has English in column A and German in column B.</div></div>';
+    return;
+  }
+  sentenceBank = pairs;
+  await dbPut('meta', { id: 'sentenceBank', pairs });
+  showProduceQuestion();
+}
+
+function showProduceQuestion() {
+  currentProduceItem = sentenceBank[Math.floor(Math.random() * sentenceBank.length)];
+  const area = document.getElementById('produceArea');
+  area.innerHTML = `
+    <p class="list-count">${sentenceBank.length} sentence${sentenceBank.length === 1 ? '' : 's'} in your bank</p>
+    <div class="card">
+      <label class="field-label">Translate to German</label>
+      <p class="produce-en">${currentProduceItem.en}</p>
+      <textarea class="answer-input" id="produceInput" placeholder="Type your German attempt…"></textarea>
+      <button class="primary" id="checkAnswerBtn">Check answer</button>
+    </div>
+    <div class="manage-link" id="manageBankLink">Replace sentence bank</div>
+  `;
+  document.getElementById('checkAnswerBtn').addEventListener('click', checkProduceAnswer);
+  document.getElementById('manageBankLink').addEventListener('click', async () => {
+    sentenceBank = [];
+    await dbDelete('meta', 'sentenceBank');
+    renderProduce();
+  });
+}
+
+function checkProduceAnswer() {
+  const userText = document.getElementById('produceInput').value.trim();
+  if (!userText) return;
+  const result = scoreAnswer(userText, currentProduceItem.de);
+  const area = document.getElementById('produceArea');
+  area.innerHTML = `
+    <div class="card">
+      <div class="score-hero"><div class="num">${result.pct}%</div><div class="lbl">word match</div></div>
+      <div class="fb-line" style="text-align:center;">Correct answer: <span class="speak-inline" id="speakCorrectBtn">🔊</span></div>
+      <p class="produce-en"><strong>${currentProduceItem.de}</strong></p>
+      ${result.missing.length ? `<label class="field-label">You missed</label><div class="word-chip-row">${result.missing.map(w => `<span class="word-chip chip-missing">${w}</span>`).join('')}</div>` : ''}
+      ${result.extra.length ? `<label class="field-label">Not expected</label><div class="word-chip-row">${result.extra.map(w => `<span class="word-chip chip-extra">${w}</span>`).join('')}</div>` : ''}
+      <button class="next-btn" id="produceNextBtn" style="margin-top: 0.5rem;">Next sentence →</button>
+    </div>
+  `;
+  document.getElementById('speakCorrectBtn').addEventListener('click', () => speak(currentProduceItem.de));
+  document.getElementById('produceNextBtn').addEventListener('click', showProduceQuestion);
+}
+
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
   return arr;
@@ -806,6 +968,8 @@ async function init() {
   words = await dbGetAll('words');
   userMeta = await dbGet('meta', 'user');
   statsMeta = await dbGet('meta', 'stats');
+  const bankRecord = await dbGet('meta', 'sentenceBank');
+  if (bankRecord && bankRecord.pairs) sentenceBank = bankRecord.pairs;
   if (!statsMeta) { statsMeta = { id: 'stats', streakCurrent: 0, streakBest: 0, lastCompletedDate: null, totalReviews: 0 }; await dbPut('meta', statsMeta); }
   if (!userMeta) showScreen('onboard'); else showScreen('home');
 }
