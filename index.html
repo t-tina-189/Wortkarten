@@ -13,12 +13,7 @@
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body {
-    margin: 0; padding: 0;
-    background: #EDEEE8;
-    color: #232220;
-    font-family: 'IBM Plex Sans', sans-serif;
-  }
+  html, body { margin: 0; padding: 0; background: #EDEEE8; color: #232220; font-family: 'IBM Plex Sans', sans-serif; }
   body { padding-bottom: 4rem; }
   h1, h2 { font-family: 'IBM Plex Serif', serif; font-weight: 600; margin: 0; }
   .wrap { max-width: 480px; margin: 0 auto; padding: 1.25rem 1rem 2rem; }
@@ -26,44 +21,31 @@
   .screen { display: none; }
   .screen.active { display: block; }
 
-  .back-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1.1rem; }
-  .back-btn {
-    border: none; background: #E1E1D8; color: #232220; font-size: 13px; font-weight: 500;
-    padding: 7px 12px; border-radius: 8px; cursor: pointer;
-  }
+  .back-row { display: flex; align-items: center; justify-content: center; margin-bottom: 1.1rem; }
+  .back-btn { border: none; background: #E1E1D8; color: #232220; font-size: 13px; font-weight: 500; padding: 7px 12px; border-radius: 8px; cursor: pointer; }
 
-  .card {
-    background: #FFFFFF; border-radius: 14px; padding: 1.1rem;
-    border: 1px solid #DEDDD3; margin-bottom: 1rem;
-  }
+  .card { background: #FFFFFF; border-radius: 14px; padding: 1.1rem; border: 1px solid #DEDDD3; margin-bottom: 1rem; }
 
-  label.field-label {
-    display: block; font-size: 12px; font-weight: 500; color: #6B6A63;
-    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
-  }
-  input[type="text"] {
-    width: 100%; padding: 10px 12px; border-radius: 9px;
-    border: 1px solid #D5D4C9; font-size: 15px; font-family: inherit;
-    background: #FAF9F4; margin-bottom: 1rem;
-  }
+  label.field-label { display: block; font-size: 12px; font-weight: 500; color: #6B6A63; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; text-align: center; }
+  input[type="text"] { width: 100%; padding: 10px 12px; border-radius: 9px; border: 1px solid #D5D4C9; font-size: 15px; font-family: inherit; background: #FAF9F4; margin-bottom: 1rem; text-align: center; }
   input[type="text"]:focus { outline: none; border-color: #232220; }
 
-  .photo-input-area {
-    border: 1.5px dashed #C9C8BC; border-radius: 12px;
-    padding: 1.2rem; text-align: center; margin-bottom: 1rem;
-    background: #FAF9F4; cursor: pointer; position: relative;
+  .word-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+  .word-row input { margin-bottom: 0; }
+  .speak-btn {
+    flex-shrink: 0; width: 42px; border-radius: 9px; border: 1px solid #D5D4C9; background: #FAF9F4;
+    font-size: 16px; cursor: pointer; color: #6B6A63;
   }
+  .speak-btn:active { transform: scale(0.95); }
+  .speak-inline { border: none; background: none; cursor: pointer; font-size: 13px; color: #185FA5; padding: 2px 4px; }
+
+  .photo-input-area { border: 1.5px dashed #C9C8BC; border-radius: 12px; padding: 1.2rem; text-align: center; margin-bottom: 1rem; background: #FAF9F4; cursor: pointer; position: relative; }
   .photo-input-area img { max-width: 100%; max-height: 220px; border-radius: 8px; display: block; margin: 0 auto; }
   .photo-input-area .hint { font-size: 13px; color: #8A8980; margin-top: 6px; }
-  .photo-input-area input[type="file"] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
+  .photo-input-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 
   .gender-row, .diff-row { display: flex; gap: 8px; margin-bottom: 1.1rem; }
-  .gender-btn, .diff-btn {
-    flex: 1; border-radius: 10px; border: 2px solid transparent;
-    padding: 12px 4px; text-align: center; cursor: pointer; font-family: 'IBM Plex Sans';
-  }
+  .gender-btn, .diff-btn { flex: 1; border-radius: 10px; border: 2px solid transparent; padding: 12px 4px; text-align: center; cursor: pointer; font-family: 'IBM Plex Sans'; }
   .gender-btn .art { font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 15px; display: block; }
   .gender-btn .sub { font-size: 10.5px; opacity: 0.85; }
   .gb-blue { background: #E6F1FB; color: #0C447C; }
@@ -77,41 +59,22 @@
   .diff-btn.selected { border-color: #BA7517; background: #FAEEDA; color: #633806; }
   .diff-btn.tier4.selected { border-color: #BA7517; background: linear-gradient(135deg,#FAEEDA,#F5D98A); color: #4A2E02; font-weight: 600; }
 
-  button.primary {
-    width: 100%; padding: 13px; border-radius: 10px; border: none;
-    background: #1C1B19; color: #F4F3EC; font-size: 15px; font-weight: 500;
-    font-family: 'IBM Plex Sans'; cursor: pointer;
-  }
+  button.primary { width: 100%; padding: 13px; border-radius: 10px; border: none; background: #1C1B19; color: #F4F3EC; font-size: 15px; font-weight: 500; font-family: 'IBM Plex Sans'; cursor: pointer; }
   button.primary:disabled { background: #C9C8BC; cursor: not-allowed; }
   button.primary:active:not(:disabled) { transform: scale(0.99); }
-  button.secondary {
-    width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid #1C1B19;
-    background: transparent; color: #1C1B19; font-size: 14px; font-weight: 500; cursor: pointer;
-    margin-top: 8px;
-  }
-  button.danger {
-    width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid #C1443B;
-    background: transparent; color: #C1443B; font-size: 14px; font-weight: 500; cursor: pointer;
-    margin-top: 8px;
-  }
+  button.danger { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid #C1443B; background: transparent; color: #C1443B; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; }
 
   .msg { font-size: 13px; padding: 8px 0; text-align: center; }
   .msg.ok { color: #2F8F5B; }
   .msg.err { color: #C1443B; }
 
-  .word-list-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 0; border-bottom: 1px solid #ECEBE2;
-  }
+  .word-list-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #ECEBE2; }
   .word-list-item:last-child { border-bottom: none; }
   .thumb-wrap { position: relative; width: 46px; height: 46px; flex-shrink: 0; }
   .thumb-wrap img { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; display: block; }
-  .star-badge {
-    position: absolute; bottom: -4px; right: -4px; background: #1C1B19; color: #FAEEDA;
-    font-size: 8.5px; font-weight: 600; padding: 1px 4px; border-radius: 6px; letter-spacing: 0.02em;
-  }
+  .star-badge { position: absolute; bottom: -4px; right: -4px; background: #1C1B19; color: #FAEEDA; font-size: 8.5px; font-weight: 600; padding: 1px 4px; border-radius: 6px; letter-spacing: 0.02em; }
   .star-badge.tier4 { background: linear-gradient(135deg,#BA7517,#F5D98A); color: #3A2200; }
-  .word-list-item .info { flex: 1; min-width: 0; }
+  .word-list-item .info { flex: 1; min-width: 0; cursor: pointer; }
   .word-list-item .info .w { font-size: 14.5px; font-weight: 500; }
   .word-list-item .info .g { font-size: 12px; color: #8A8980; }
   .swatch { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
@@ -120,49 +83,40 @@
   .del-btn:hover { color: #C1443B; }
   .empty-state { text-align: center; padding: 2.5rem 1rem; color: #8A8980; font-size: 14px; }
 
-  .quiz-photo-wrap { text-align: center; margin-bottom: 1rem; }
+  .quiz-photo-wrap { text-align: center; margin-bottom: 0.6rem; }
   .quiz-photo-wrap img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; }
-  .case-tag {
-    display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px;
-    letter-spacing: 0.03em; text-transform: uppercase; color: #6B6A63;
-    background: #E9E8E1; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px;
-  }
-  .quiz-sentence { font-size: 16.5px; margin: 0 0 1.1rem; line-height: 1.5; }
+  .quiz-word-row { text-align: center; margin-bottom: 10px; }
+  .case-tag { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: 0.03em; text-transform: uppercase; color: #6B6A63; background: #E9E8E1; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px; }
+  .quiz-sentence { font-size: 16.5px; margin: 0 0 1.1rem; line-height: 1.5; text-align: center; }
   .quiz-sentence .blank { display: inline-block; min-width: 46px; border-bottom: 2px solid #C9C8BC; text-align: center; font-weight: 500; }
   .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1rem; }
-  .opt-btn {
-    padding: 11px 4px; border-radius: 9px; border: 1.5px solid #DEDDD3;
-    background: #FAF9F4; font-family: 'IBM Plex Mono', monospace; font-size: 14px;
-    font-weight: 500; cursor: pointer; color: #232220;
-  }
+  .opt-btn { padding: 11px 4px; border-radius: 9px; border: 1.5px solid #DEDDD3; background: #FAF9F4; font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 500; cursor: pointer; color: #232220; }
   .opt-btn.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
   .opt-btn.wrong { background: #FCEBEB; border-color: #E24B4A; color: #791F1F; }
   .opt-btn:disabled { cursor: default; }
-  .feedback { font-size: 14px; padding: 10px 12px; border-radius: 9px; margin-bottom: 1rem; }
+  .feedback { font-size: 14px; padding: 10px 12px; border-radius: 9px; margin-bottom: 1rem; text-align: center; }
   .feedback.correct { background: #EAF3DE; color: #27500A; }
   .feedback.wrong { background: #FCEBEB; color: #791F1F; }
-  .score-row { display: flex; justify-content: space-between; font-size: 12.5px; color: #8A8980; margin-bottom: 1rem; }
-  .next-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid #1C1B19; background: transparent; color: #1C1B19; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .score-row { display: flex; justify-content: center; gap: 16px; font-size: 12.5px; color: #8A8980; margin-bottom: 1rem; }
+  .btn-row { display: flex; gap: 8px; }
+  .listen-btn, .next-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #1C1B19; background: transparent; color: #1C1B19; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .next-btn { background: #1C1B19; color: #F4F3EC; }
 
   .summary-stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ECEBE2; font-size: 13.5px; }
   .summary-stat:last-child { border-bottom: none; }
   .summary-stat .lbl { color: #6B6A63; }
   .summary-stat .val { font-weight: 500; }
 
-  .home-header { padding: 1.5rem 0 1.25rem; }
-  .home-header h1 { font-size: 22px; letter-spacing: -0.01em; }
-  .home-status { margin: 6px 0 0; font-size: 13.5px; color: #6B6A63; }
-  .tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
-  .tile {
-    background: #FFFFFF; border: 1px solid #DEDDD3; border-radius: 14px; padding: 1.1rem 0.9rem;
-    cursor: pointer; text-align: left;
+  .home-header { padding: 1.75rem 0 1.75rem; text-align: center; }
+  .home-header h1 { font-size: 23px; letter-spacing: -0.01em; }
+  .home-status { margin: 8px 0 0; font-size: 13.5px; color: #6B6A63; }
+  .menu-stack { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+  .pill {
+    width: 100%; max-width: 300px; background: #FFFFFF; border: 1px solid #DEDDD3; border-radius: 999px;
+    padding: 15px 1rem; text-align: center; cursor: pointer; font-size: 15px; font-weight: 500;
   }
-  .tile .tile-num { font-family: 'IBM Plex Mono', monospace; font-size: 20px; color: #8A8980; display: block; margin-bottom: 6px; }
-  .tile .tile-label { font-size: 14.5px; font-weight: 500; }
-  .tile .tile-sub { font-size: 11.5px; color: #8A8980; margin-top: 2px; }
-  .settings-link {
-    text-align: center; font-size: 12.5px; color: #8A8980; padding: 10px; cursor: pointer;
-  }
+  .pill .pill-sub { display: block; font-size: 11px; color: #8A8980; font-weight: 400; margin-top: 2px; }
+  .settings-link { text-align: center; font-size: 12.5px; color: #8A8980; padding: 10px; cursor: pointer; }
 
   .onboard-wrap { padding: 3rem 0; text-align: center; }
   .onboard-wrap h1 { font-size: 24px; margin-bottom: 8px; }
@@ -191,11 +145,11 @@
       <h1 id="homeGreeting">Hello</h1>
       <p class="home-status" id="homeStatus"></p>
     </div>
-    <div class="tile-grid">
-      <div class="tile" data-go="add"><span class="tile-num">01</span><span class="tile-label">Add words</span></div>
-      <div class="tile" data-go="practice"><span class="tile-num">02</span><span class="tile-label">Practice now</span><span class="tile-sub" id="dueSub"></span></div>
-      <div class="tile" data-go="list"><span class="tile-num">03</span><span class="tile-label">My words</span></div>
-      <div class="tile" data-go="stats"><span class="tile-num">04</span><span class="tile-label">Stats</span></div>
+    <div class="menu-stack">
+      <div class="pill" data-go="add">Add words</div>
+      <div class="pill" data-go="practice">Practice now<span class="pill-sub" id="dueSub"></span></div>
+      <div class="pill" data-go="list">My words</div>
+      <div class="pill" data-go="stats">Stats</div>
     </div>
     <div class="settings-link" id="goSettings">Settings</div>
   </div>
@@ -211,7 +165,10 @@
       </div>
 
       <label class="field-label">German word</label>
-      <input type="text" id="wordInput" placeholder="e.g. Tisch">
+      <div class="word-row">
+        <input type="text" id="wordInput" placeholder="e.g. Tisch">
+        <button class="speak-btn" id="previewSpeak" type="button">🔊</button>
+      </div>
 
       <label class="field-label">Gender — tap to tag</label>
       <div class="gender-row">
@@ -246,10 +203,7 @@
   <div class="screen" id="screen-stats">
     <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
     <div class="card">
-      <div class="streak-hero">
-        <div class="num" id="streakNum">0</div>
-        <div class="lbl">day streak</div>
-      </div>
+      <div class="streak-hero"><div class="num" id="streakNum">0</div><div class="lbl">day streak</div></div>
       <div class="summary-stat"><span class="lbl">Best streak</span><span class="val" id="bestStreakVal">0</span></div>
       <div class="summary-stat"><span class="lbl">Words in deck</span><span class="val" id="totalWordsVal">0</span></div>
       <div class="summary-stat"><span class="lbl">Cards reviewed (all time)</span><span class="val" id="totalReviewsVal">0</span></div>
@@ -290,13 +244,60 @@ const GENDER_LABEL = { masc: 'der', fem: 'die', neut: 'das' };
 const GENDER_SWATCH = { masc: 'sw-blue', fem: 'sw-pink', neut: 'sw-black' };
 const CASE_LIST = ['nom', 'akk', 'dat', 'gen'];
 const CASE_NAMES = { nom: 'Nominativ', akk: 'Akkusativ', dat: 'Dativ', gen: 'Genitiv' };
-const CASE_TEMPLATE = {
-  nom: (art, w) => `${cap(art)} ${w} ist hier.`,
-  akk: (art, w) => `Ich sehe ${art} ${w}.`,
-  dat: (art, w) => `Ich spreche mit ${art} ${w}.`,
-  gen: (art, w) => `Die Farbe ${art} ${w} gefällt mir.`
-};
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+const CASE_TEMPLATES = {
+  nom: [
+    (a, w) => `${cap(a)} ${w} steht direkt hier.`,
+    (a, w) => `${cap(a)} ${w} hat gestern gefehlt.`,
+    (a, w) => `Weil ${a} ${w} kaputt ist, müssen wir etwas tun.`,
+    (a, w) => `${cap(a)} ${w} war früher da, aber jetzt nicht mehr.`,
+    (a, w) => `Trotzdem bleibt ${a} ${w} an seinem Platz.`
+  ],
+  akk: [
+    (a, w) => `Ich sehe ${a} ${w}.`,
+    (a, w) => `Ich habe ${a} ${w} gestern gekauft.`,
+    (a, w) => `Weil ich ${a} ${w} brauche, gehe ich einkaufen.`,
+    (a, w) => `Ich mag ${a} ${w}, aber nicht besonders.`,
+    (a, w) => `Trotzdem nehme ich ${a} ${w} nicht mit.`
+  ],
+  dat: [
+    (a, w) => `Ich spreche mit ${a} ${w}.`,
+    (a, w) => `Ich habe mit ${a} ${w} gesprochen.`,
+    (a, w) => `Weil ich mit ${a} ${w} rede, verstehe ich es besser.`,
+    (a, w) => `Ich helfe ${a} ${w}, aber nur kurz.`,
+    (a, w) => `Trotzdem vertraue ich ${a} ${w}.`
+  ],
+  gen: [
+    (a, w) => `Die Farbe ${a} ${w} gefällt mir.`,
+    (a, w) => `Wegen ${a} ${w} mussten wir warten.`,
+    (a, w) => `Trotz ${a} ${w} sind wir pünktlich angekommen.`,
+    (a, w) => `Das ist die Geschichte ${a} ${w}.`
+  ]
+};
+
+const ENCOURAGEMENT = [
+  "Ready when you are.",
+  "Small steps, every day.",
+  "Let's keep the streak alive.",
+  "Your words are waiting.",
+  "One session at a time.",
+  "Consistency beats intensity.",
+  "Back for more — good.",
+  "Let's sharpen those cases.",
+  "Today counts too.",
+  "You've got this."
+];
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'de-DE';
+  u.rate = 0.95;
+  window.speechSynthesis.speak(u);
+}
+
 const STAR_TEXT = { 1: '★', 2: '★★', 3: '★★★', 4: '★★★★' };
 const LADDER_DAYS = [1, 3, 7, 14];
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -377,9 +378,7 @@ function showScreen(name) {
   if (name === 'stats') renderStats();
   if (name === 'settings') { document.getElementById('settingsName').value = userMeta ? userMeta.name : ''; }
 }
-document.querySelectorAll('[data-go]').forEach(el => {
-  el.addEventListener('click', () => showScreen(el.dataset.go));
-});
+document.querySelectorAll('[data-go]').forEach(el => { el.addEventListener('click', () => showScreen(el.dataset.go)); });
 document.getElementById('goSettings').addEventListener('click', () => showScreen('settings'));
 
 document.getElementById('onboardSave').addEventListener('click', async () => {
@@ -389,7 +388,6 @@ document.getElementById('onboardSave').addEventListener('click', async () => {
   await dbPut('meta', userMeta);
   showScreen('home');
 });
-
 document.getElementById('settingsSaveName').addEventListener('click', async () => {
   const name = document.getElementById('settingsName').value.trim();
   if (!name) return;
@@ -402,44 +400,32 @@ let resetStage = 0;
 document.getElementById('resetBtn').addEventListener('click', async () => {
   const msg = document.getElementById('resetMsg');
   resetStage++;
-  if (resetStage === 1) {
-    msg.className = 'msg err';
-    msg.textContent = 'This deletes all words, stats, and your streak. Tap again to confirm.';
-  } else if (resetStage === 2) {
-    msg.className = 'msg err';
-    msg.textContent = 'Really sure? Tap once more to permanently reset.';
-  } else {
-    await dbClear('words');
-    await dbClear('meta');
-    words = [];
-    userMeta = null;
-    statsMeta = null;
-    resetStage = 0;
-    msg.textContent = '';
+  if (resetStage === 1) { msg.className = 'msg err'; msg.textContent = 'This deletes all words, stats, and your streak. Tap again to confirm.'; }
+  else if (resetStage === 2) { msg.className = 'msg err'; msg.textContent = 'Really sure? Tap once more to permanently reset.'; }
+  else {
+    await dbClear('words'); await dbClear('meta');
+    words = []; userMeta = null; statsMeta = null; resetStage = 0; msg.textContent = '';
     showScreen('onboard');
   }
 });
 
 function renderHome() {
+  const line = ENCOURAGEMENT[Math.floor(Math.random() * ENCOURAGEMENT.length)];
   document.getElementById('homeGreeting').textContent = `Hello, ${userMeta ? userMeta.name : ''}`;
   const due = buildQueue();
   const doneToday = statsMeta && statsMeta.lastCompletedDate === todayStr();
   const statusEl = document.getElementById('homeStatus');
   const dueSub = document.getElementById('dueSub');
-  if (words.length === 0) {
-    statusEl.textContent = 'Add your first word to get started.';
-    dueSub.textContent = '';
-  } else if (doneToday) {
-    statusEl.textContent = "Today's task is done. Nice work.";
-    dueSub.textContent = 'Done for today';
-  } else if (due.length > 0) {
-    statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today.`;
-    dueSub.textContent = `${due.length} due`;
-  } else {
-    statusEl.textContent = 'Nothing due right now.';
-    dueSub.textContent = '';
-  }
+  if (words.length === 0) { statusEl.textContent = 'Add your first word to get started.'; dueSub.textContent = ''; }
+  else if (doneToday) { statusEl.textContent = `Today's task is done. ${line}`; dueSub.textContent = 'Done for today'; }
+  else if (due.length > 0) { statusEl.textContent = `${due.length} card${due.length === 1 ? '' : 's'} due today. ${line}`; dueSub.textContent = `${due.length} due`; }
+  else { statusEl.textContent = `Nothing due right now. ${line}`; dueSub.textContent = ''; }
 }
+
+document.getElementById('previewSpeak').addEventListener('click', () => {
+  const w = document.getElementById('wordInput').value.trim();
+  if (w) speak(w);
+});
 
 document.getElementById('photoInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -498,17 +484,12 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   const word = document.getElementById('wordInput').value.trim();
   const cases = {};
   CASE_LIST.forEach(c => { cases[c] = newCaseState(); });
-  const entry = {
-    id: Date.now().toString(),
-    word, gender: selectedGender, difficulty: parseInt(selectedDiff, 10),
-    photo: photoDataUrl, createdAt: new Date().toISOString(), cases
-  };
+  const entry = { id: Date.now().toString(), word, gender: selectedGender, difficulty: parseInt(selectedDiff, 10), photo: photoDataUrl, createdAt: new Date().toISOString(), cases };
   await dbPut('words', entry);
   words.push(entry);
   const msgEl = document.getElementById('saveMsg');
   msgEl.textContent = `Saved — ${GENDER_LABEL[selectedGender]} ${word}`;
   msgEl.className = 'msg ok';
-
   document.getElementById('wordInput').value = '';
   selectedGender = null; selectedDiff = null; photoDataUrl = null;
   document.querySelectorAll('.gender-btn, .diff-btn').forEach(b => b.classList.remove('selected'));
@@ -520,25 +501,24 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 
 function renderList() {
   const card = document.getElementById('listCard');
-  if (words.length === 0) {
-    card.innerHTML = '<div class="empty-state">No words yet. Add your first one from the home screen.</div>';
-    return;
-  }
+  if (words.length === 0) { card.innerHTML = '<div class="empty-state">No words yet. Add your first one from the home screen.</div>'; return; }
   card.innerHTML = words.slice().reverse().map(w => `
     <div class="word-list-item" data-id="${w.id}">
       <div class="thumb-wrap">
         <img src="${w.photo}">
         <span class="star-badge ${w.difficulty === 4 ? 'tier4' : ''}">${STAR_TEXT[w.difficulty] || ''}</span>
       </div>
-      <div class="info">
-        <div class="w"><span class="swatch ${GENDER_SWATCH[w.gender]}"></span>${GENDER_LABEL[w.gender]} ${w.word}</div>
+      <div class="info" data-speak="${w.word}">
+        <div class="w"><span class="swatch ${GENDER_SWATCH[w.gender]}"></span>${GENDER_LABEL[w.gender]} ${w.word} <span class="speak-inline">🔊</span></div>
         <div class="g">${w.gender === 'masc' ? 'masculine' : w.gender === 'fem' ? 'feminine' : 'neuter'}</div>
       </div>
       <button class="del-btn" data-del="${w.id}">×</button>
     </div>
   `).join('');
+  card.querySelectorAll('[data-speak]').forEach(el => { el.addEventListener('click', () => speak(el.dataset.speak)); });
   card.querySelectorAll('[data-del]').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
       await dbDelete('words', btn.dataset.del);
       words = words.filter(w => w.id !== btn.dataset.del);
       renderList();
@@ -546,21 +526,14 @@ function renderList() {
   });
 }
 
-let sessionQueue = [], retryPool = [], currentItem = null;
+let sessionQueue = [], retryPool = [], currentItem = null, currentFullSentence = '';
 let sessionStats = { total: 0, correct: 0, byWord: {}, byCase: {} };
 
 function buildQueue() {
   const today = todayStr();
   const due = [];
-  words.forEach(w => {
-    CASE_LIST.forEach(c => {
-      if (w.cases[c].nextDue <= today) due.push({ wordId: w.id, c });
-    });
-  });
-  for (let i = due.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [due[i], due[j]] = [due[j], due[i]];
-  }
+  words.forEach(w => { CASE_LIST.forEach(c => { if (w.cases[c].nextDue <= today) due.push({ wordId: w.id, c }); }); });
+  for (let i = due.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [due[i], due[j]] = [due[j], due[i]]; }
   return due;
 }
 
@@ -586,7 +559,10 @@ function renderQuestion() {
   const allForms = ['der', 'die', 'das', 'den', 'dem', 'des'];
   const distractors = shuffle(allForms.filter(f => f !== correctArt));
   const options = shuffle([correctArt, distractors[0], distractors[1]]);
-  const sentence = CASE_TEMPLATE[c]('___', w.word);
+  const templates = CASE_TEMPLATES[c];
+  const template = templates[Math.floor(Math.random() * templates.length)];
+  const sentence = template('___', w.word);
+  currentFullSentence = template(correctArt, w.word);
   const parts = sentence.split('___');
   const remaining = sessionQueue.length + retryPool.length + 1;
   const area = document.getElementById('practiceArea');
@@ -594,13 +570,18 @@ function renderQuestion() {
     <div class="score-row"><span>Session: ${sessionStats.correct}/${sessionStats.total}</span><span>${remaining} card${remaining === 1 ? '' : 's'} left today</span></div>
     <div class="card">
       <div class="quiz-photo-wrap"><img src="${w.photo}"></div>
-      <div class="case-tag">${CASE_NAMES[c]}</div>
+      <div class="quiz-word-row"><span class="speak-inline" id="speakWordBtn">🔊 hear word</span></div>
+      <div style="text-align:center;"><div class="case-tag">${CASE_NAMES[c]}</div></div>
       <p class="quiz-sentence">${parts[0]}<span class="blank" id="blankSlot">___</span>${parts[1]}</p>
       <div class="options-grid" id="optsGrid">${options.map(o => `<button class="opt-btn" data-opt="${o}">${o}</button>`).join('')}</div>
       <div id="feedbackSlot"></div>
-      <button class="next-btn" id="nextBtn" style="display:none;">Next card →</button>
+      <div class="btn-row" id="afterRow" style="display:none;">
+        <button class="listen-btn" id="listenBtn">🔊 Listen to sentence</button>
+        <button class="next-btn" id="nextBtn">Next card →</button>
+      </div>
     </div>
   `;
+  document.getElementById('speakWordBtn').addEventListener('click', () => speak(w.word));
   document.querySelectorAll('.opt-btn').forEach(btn => btn.addEventListener('click', () => handleAnswer(btn.dataset.opt, w, c, correctArt)));
 }
 
@@ -626,40 +607,29 @@ async function handleAnswer(chosen, w, c, correctArt) {
   const caseState = w.cases[c];
   if (isCorrect) {
     const { stage, days } = nextInterval(caseState.stage);
-    caseState.stage = stage;
-    caseState.correctCount++;
+    caseState.stage = stage; caseState.correctCount++;
     caseState.nextDue = new Date(Date.now() + days * DAY_MS).toISOString().slice(0, 10);
   } else {
-    caseState.stage = -1;
-    caseState.wrongCount++;
-    caseState.nextDue = todayStr();
+    caseState.stage = -1; caseState.wrongCount++; caseState.nextDue = todayStr();
     retryPool.push({ wordId: w.id, c });
-    if (retryPool.length >= 2) {
-      const insertAt = Math.min(2, sessionQueue.length);
-      sessionQueue.splice(insertAt, 0, retryPool.shift());
-    }
+    if (retryPool.length >= 2) { const insertAt = Math.min(2, sessionQueue.length); sessionQueue.splice(insertAt, 0, retryPool.shift()); }
   }
   await dbPut('words', w);
   statsMeta.totalReviews = (statsMeta.totalReviews || 0) + 1;
   await dbPut('meta', statsMeta);
 
-  document.getElementById('nextBtn').style.display = 'block';
+  document.getElementById('afterRow').style.display = 'flex';
+  document.getElementById('listenBtn').onclick = () => speak(currentFullSentence);
   document.getElementById('nextBtn').onclick = nextCard;
 }
 
 async function finishSession() {
   const area = document.getElementById('practiceArea');
-  if (sessionStats.total === 0) {
-    area.innerHTML = '<div class="card"><div class="empty-state">Nothing due right now. Add words or come back after their next interval.</div></div>';
-    return;
-  }
+  if (sessionStats.total === 0) { area.innerHTML = '<div class="card"><div class="empty-state">Nothing due right now. Add words or come back after their next interval.</div></div>'; return; }
   let worstWord = null;
   Object.values(sessionStats.byWord).forEach(w => { if (!worstWord || w.attempts > worstWord.attempts) worstWord = w; });
   let worstCase = null;
-  Object.entries(sessionStats.byCase).forEach(([c, s]) => {
-    const acc = s.correct / s.total;
-    if (!worstCase || acc < worstCase.acc) worstCase = { c, acc };
-  });
+  Object.entries(sessionStats.byCase).forEach(([c, s]) => { const acc = s.correct / s.total; if (!worstCase || acc < worstCase.acc) worstCase = { c, acc }; });
 
   const today = todayStr();
   if (statsMeta.lastCompletedDate !== today) {
@@ -669,18 +639,15 @@ async function finishSession() {
     statsMeta.lastCompletedDate = today;
   }
   statsMeta.lastSession = {
-    total: sessionStats.total,
-    correct: sessionStats.correct,
-    worstWord: worstWord ? worstWord.word : null,
-    worstWordAttempts: worstWord ? worstWord.attempts : null,
-    worstCase: worstCase ? CASE_NAMES[worstCase.c] : null,
-    worstCaseAcc: worstCase ? Math.round(worstCase.acc * 100) : null
+    total: sessionStats.total, correct: sessionStats.correct,
+    worstWord: worstWord ? worstWord.word : null, worstWordAttempts: worstWord ? worstWord.attempts : null,
+    worstCase: worstCase ? CASE_NAMES[worstCase.c] : null, worstCaseAcc: worstCase ? Math.round(worstCase.acc * 100) : null
   };
   await dbPut('meta', statsMeta);
 
   area.innerHTML = `
     <div class="card">
-      <h2 style="font-size:17px; margin-bottom: 12px;">All done for today</h2>
+      <h2 style="font-size:17px; margin-bottom: 12px; text-align:center;">All done for today</h2>
       <div class="summary-stat"><span class="lbl">Cards reviewed</span><span class="val">${sessionStats.total}</span></div>
       <div class="summary-stat"><span class="lbl">Accuracy</span><span class="val">${Math.round(sessionStats.correct / sessionStats.total * 100)}%</span></div>
       ${worstWord ? `<div class="summary-stat"><span class="lbl">Most attempts</span><span class="val">${worstWord.word} (${worstWord.attempts})</span></div>` : ''}
@@ -705,16 +672,11 @@ function renderStats() {
       ${ls.worstWord ? `<div class="summary-stat"><span class="lbl">Most attempts</span><span class="val">${ls.worstWord} (${ls.worstWordAttempts})</span></div>` : ''}
       ${ls.worstCase ? `<div class="summary-stat"><span class="lbl">Weakest case</span><span class="val">${ls.worstCase} (${ls.worstCaseAcc}%)</span></div>` : ''}
     `;
-  } else {
-    lsCard.style.display = 'none';
-  }
+  } else { lsCard.style.display = 'none'; }
 }
 
 function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
+  for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
   return arr;
 }
 
@@ -727,12 +689,8 @@ async function init() {
   words = await dbGetAll('words');
   userMeta = await dbGet('meta', 'user');
   statsMeta = await dbGet('meta', 'stats');
-  if (!statsMeta) {
-    statsMeta = { id: 'stats', streakCurrent: 0, streakBest: 0, lastCompletedDate: null, totalReviews: 0 };
-    await dbPut('meta', statsMeta);
-  }
-  if (!userMeta) showScreen('onboard');
-  else showScreen('home');
+  if (!statsMeta) { statsMeta = { id: 'stats', streakCurrent: 0, streakBest: 0, lastCompletedDate: null, totalReviews: 0 }; await dbPut('meta', statsMeta); }
+  if (!userMeta) showScreen('onboard'); else showScreen('home');
 }
 init();
 </script>
