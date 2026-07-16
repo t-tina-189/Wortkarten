@@ -55,6 +55,8 @@
   .diff-btn { background: #FAF9F4; font-size: 15px; color: #6B6A63; }
   .diff-btn.selected { border-color: #BA7517; background: #FAEEDA; color: #633806; }
   .diff-btn.tier4.selected { border-color: #BA7517; background: linear-gradient(135deg,#FAEEDA,#F5D98A); color: #4A2E02; font-weight: 600; }
+  .case-btn { flex: 1; border-radius: 10px; border: 2px solid transparent; padding: 12px 4px; text-align: center; cursor: pointer; font-family: 'IBM Plex Sans'; background: #FAF9F4; font-size: 14px; color: #6B6A63; }
+  .case-btn.selected { border-color: #185FA5; background: #E6F1FB; color: #0C447C; font-weight: 600; }
 
   button.primary { width: 100%; padding: 13px; border-radius: 10px; border: none; background: #1C1B19; color: #F4F3EC; font-size: 15px; font-weight: 500; font-family: 'IBM Plex Sans'; cursor: pointer; }
   button.primary:disabled { background: #C9C8BC; cursor: not-allowed; }
@@ -260,13 +262,15 @@
     <div class="card">
       <label class="field-label">Mode — cases to practice</label>
       <div class="gender-row" id="caseToggleRow">
-        <div class="diff-btn" data-case="nom">Nominativ</div>
-        <div class="diff-btn" data-case="akk">Akkusativ</div>
+        <div class="case-btn" data-case="nom">Nominativ</div>
+        <div class="case-btn" data-case="akk">Akkusativ</div>
       </div>
       <div class="gender-row">
-        <div class="diff-btn" data-case="dat">Dativ</div>
-        <div class="diff-btn" data-case="gen">Genitiv</div>
+        <div class="case-btn" data-case="dat">Dativ</div>
+        <div class="case-btn" data-case="gen">Genitiv</div>
       </div>
+      <button class="primary" id="saveCasesBtn">Save changes</button>
+      <div class="msg" id="casesMsg"></div>
     </div>
     <div class="card">
       <label class="field-label">Reference</label>
@@ -466,11 +470,14 @@ let words = [];
 let userMeta = null;
 let statsMeta = null;
 let activeCases = ['nom', 'akk', 'dat', 'gen'];
+let pendingCases = ['nom', 'akk', 'dat', 'gen'];
 
 function renderCaseToggles() {
+  pendingCases = [...activeCases];
   document.querySelectorAll('[data-case]').forEach(btn => {
-    btn.classList.toggle('selected', activeCases.includes(btn.dataset.case));
+    btn.classList.toggle('selected', pendingCases.includes(btn.dataset.case));
   });
+  document.getElementById('casesMsg').textContent = '';
 }
 
 function showScreen(name) {
@@ -502,17 +509,26 @@ document.getElementById('settingsSaveName').addEventListener('click', async () =
 });
 
 document.querySelectorAll('[data-case]').forEach(btn => {
-  btn.addEventListener('click', async () => {
+  btn.addEventListener('click', () => {
     const c = btn.dataset.case;
-    if (activeCases.includes(c)) {
-      if (activeCases.length === 1) return;
-      activeCases = activeCases.filter(x => x !== c);
+    if (pendingCases.includes(c)) {
+      if (pendingCases.length === 1) return;
+      pendingCases = pendingCases.filter(x => x !== c);
     } else {
-      activeCases = [...activeCases, c];
+      pendingCases = [...pendingCases, c];
     }
-    renderCaseToggles();
-    await dbPut('meta', { id: 'appSettings', activeCases });
+    btn.classList.toggle('selected', pendingCases.includes(c));
+    document.getElementById('casesMsg').textContent = '';
   });
+});
+
+document.getElementById('saveCasesBtn').addEventListener('click', async () => {
+  activeCases = [...pendingCases];
+  await dbPut('meta', { id: 'appSettings', activeCases });
+  const due = buildQueue();
+  const msg = document.getElementById('casesMsg');
+  msg.className = 'msg ok';
+  msg.textContent = `Saved — ${due.length} card${due.length === 1 ? '' : 's'} due now.`;
 });
 
 let resetStage = 0;
@@ -523,7 +539,7 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
   else if (resetStage === 2) { msg.className = 'msg err'; msg.textContent = 'Really sure? Tap once more to permanently reset.'; }
   else {
     await dbClear('words'); await dbClear('meta');
-    words = []; userMeta = null; statsMeta = null; sentenceBank = []; activeCases = ['nom', 'akk', 'dat', 'gen']; resetStage = 0; msg.textContent = '';
+    words = []; userMeta = null; statsMeta = null; sentenceBank = []; activeCases = ['nom', 'akk', 'dat', 'gen']; pendingCases = ['nom', 'akk', 'dat', 'gen']; resetStage = 0; msg.textContent = '';
     showScreen('onboard');
   }
 });
