@@ -14,7 +14,7 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; background: #EDEEE8; color: #232220; font-family: 'IBM Plex Sans', sans-serif; }
-  body { padding-bottom: 4rem; }
+  body { padding-bottom: 4rem; padding-top: max(env(safe-area-inset-top), 20px); }
   h1, h2 { font-family: 'IBM Plex Serif', serif; font-weight: 600; margin: 0; }
   .wrap { max-width: 480px; margin: 0 auto; padding: 1.25rem 1rem 2rem; }
 
@@ -124,6 +124,7 @@
   .streak-hero .num { font-family: 'IBM Plex Serif', serif; font-size: 44px; font-weight: 600; }
   .streak-hero .lbl { font-size: 13px; color: #6B6A63; }
   .ref-link { display: block; text-align: center; font-size: 13px; color: #185FA5; margin-top: 10px; }
+  .list-count { text-align: center; font-size: 13px; color: #6B6A63; margin: 0 0 0.85rem; }
 </style>
 </head>
 <body>
@@ -199,6 +200,7 @@
 
   <div class="screen" id="screen-list">
     <div class="back-row"><button class="back-btn" data-go="home">← Home</button></div>
+    <p class="list-count" id="listCount"></p>
     <div class="card" id="listCard"><div class="empty-state">Loading…</div></div>
   </div>
 
@@ -561,6 +563,8 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 
 function renderList() {
   const card = document.getElementById('listCard');
+  const countEl = document.getElementById('listCount');
+  countEl.textContent = words.length === 0 ? '' : `${words.length} word${words.length === 1 ? '' : 's'} in your deck`;
   if (words.length === 0) { card.innerHTML = '<div class="empty-state">No words yet. Add your first one from the home screen.</div>'; return; }
   card.innerHTML = words.slice().reverse().map(w => `
     <div class="word-list-item gender-${w.gender}" data-id="${w.id}">
@@ -780,6 +784,22 @@ function shuffle(arr) {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
+
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  const dy = e.changedTouches[0].screenY - touchStartY;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5 && dx < 0) {
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen && activeScreen.id !== 'screen-home' && activeScreen.id !== 'screen-onboard') {
+      showScreen('home');
+    }
+  }
+}, { passive: true });
 
 async function init() {
   db = await openDB();
