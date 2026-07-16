@@ -80,6 +80,21 @@
   .word-list-item .info { flex: 1; min-width: 0; cursor: pointer; }
   .word-list-item .info .w { font-size: 14.5px; font-weight: 500; }
   .word-list-item .info .g { font-size: 12px; color: #6B6A63; cursor: pointer; }
+
+  .sort-row { display: flex; gap: 8px; margin-bottom: 0.85rem; }
+  .sort-btn { flex: 1; text-align: center; padding: 9px 4px; border-radius: 9px; border: 1px solid #DEDDD3; background: #FAF9F4; font-size: 12.5px; color: #6B6A63; cursor: pointer; }
+  .sort-btn.active { border-color: #185FA5; background: #E6F1FB; color: #0C447C; font-weight: 600; }
+  .word-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .word-col { display: flex; flex-direction: column; gap: 8px; }
+  .wb-card { border-radius: 12px; padding: 6px; text-align: center; }
+  .wb-card.gender-masc { background: #E6F1FB; }
+  .wb-card.gender-fem { background: #FBEAF0; }
+  .wb-card.gender-neut { background: #E7E7E2; }
+  .wb-photo-wrap { position: relative; margin-bottom: 6px; cursor: pointer; }
+  .wb-photo-wrap img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; display: block; }
+  .wb-del { position: absolute; top: 3px; right: 3px; background: rgba(28,27,25,0.6); color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 13px; line-height: 1; cursor: pointer; }
+  .wb-word { font-size: 12.5px; font-weight: 600; line-height: 1.3; word-break: break-word; }
+  .wb-meaning { font-size: 12.5px; color: #232220; cursor: pointer; line-height: 1.3; word-break: break-word; }
   .del-btn { border: none; background: none; color: #8A8980; font-size: 18px; cursor: pointer; padding: 4px 6px; }
   .del-btn:hover { color: #C1443B; }
   .empty-state { text-align: center; padding: 2.5rem 1rem; color: #8A8980; font-size: 14px; }
@@ -272,6 +287,10 @@
   <div class="screen" id="screen-list">
     <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
     <p class="list-count" id="listCount"></p>
+    <div class="sort-row">
+      <div class="sort-btn" data-sort="rarity">Sort: Rarity</div>
+      <div class="sort-btn" data-sort="date">Sort: Newest</div>
+    </div>
     <div class="card" id="listCard"><div class="empty-state">Loading…</div></div>
   </div>
 
@@ -741,24 +760,51 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   setTimeout(() => { msgEl.textContent = ''; }, 2500);
 });
 
+let wordSortMode = 'date';
+
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    wordSortMode = btn.dataset.sort;
+    renderList();
+  });
+});
+
+function getSortedWords() {
+  const arr = [...words];
+  if (wordSortMode === 'rarity') arr.sort((a, b) => (b.difficulty || 0) - (a.difficulty || 0));
+  else arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  return arr;
+}
+
 function renderList() {
   const card = document.getElementById('listCard');
   const countEl = document.getElementById('listCount');
   countEl.textContent = words.length === 0 ? '' : `${words.length} word${words.length === 1 ? '' : 's'} in your deck`;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === wordSortMode));
   if (words.length === 0) { card.innerHTML = '<div class="empty-state">No words yet. Add your first one from New words.</div>'; return; }
-  card.innerHTML = words.slice().reverse().map(w => `
-    <div class="word-list-item gender-${w.gender}" data-id="${w.id}">
-      <div class="thumb-wrap">
+
+  const sorted = getSortedWords();
+  const cols = { masc: [], fem: [], neut: [] };
+  sorted.forEach(w => cols[w.gender].push(w));
+
+  const cardHtml = (w) => `
+    <div class="wb-card gender-${w.gender}">
+      <div class="wb-photo-wrap" data-speak="${GENDER_LABEL[w.gender]} ${w.word}">
         <img src="${w.photo}">
         <span class="star-badge ${w.difficulty === 4 ? 'tier4' : ''}">${STAR_TEXT[w.difficulty] || ''}</span>
+        <button class="wb-del" data-del="${w.id}">×</button>
       </div>
-      <div class="info">
-        <div class="w" data-speak="${GENDER_LABEL[w.gender]} ${w.word}"><span>${GENDER_LABEL[w.gender]} ${w.word}</span> <span class="speak-inline">🔊</span></div>
-        <div class="g" data-meaning-id="${w.id}">${w.meaning ? w.meaning : '— tap to add meaning'}</div>
-      </div>
-      <button class="del-btn" data-del="${w.id}">×</button>
+      <div class="wb-word">${w.word}</div>
+      <div class="wb-meaning" data-meaning-id="${w.id}">${w.meaning ? w.meaning : '— tap to add meaning'}</div>
     </div>
-  `).join('');
+  `;
+
+  card.innerHTML = `<div class="word-grid">
+    <div class="word-col">${cols.masc.map(cardHtml).join('')}</div>
+    <div class="word-col">${cols.fem.map(cardHtml).join('')}</div>
+    <div class="word-col">${cols.neut.map(cardHtml).join('')}</div>
+  </div>`;
+
   card.querySelectorAll('[data-speak]').forEach(el => { el.addEventListener('click', () => speak(el.dataset.speak)); });
   card.querySelectorAll('[data-meaning-id]').forEach(el => {
     el.addEventListener('click', async (e) => {
@@ -821,7 +867,7 @@ function renderQuestion() {
   const idx = Math.floor(Math.random() * templates.length);
   const sentence = templates[idx]('___', w.word);
   currentFullSentence = templates[idx](correctArt, w.word);
-  currentEnSentence = EN_TEMPLATES[c][idx](w.word);
+  currentEnSentence = EN_TEMPLATES[c][idx](w.meaning || w.word);
   const parts = sentence.split('___');
   const remaining = sessionQueue.length + retryPool.length + 1;
   const area = document.getElementById('practiceArea');
@@ -1060,7 +1106,7 @@ async function checkSpelling(w, selectedGender) {
     const typedCh = typed[i] || '';
     const isRight = typedCh.toLowerCase() === ch.toLowerCase();
     if (isRight) matchCount++;
-    return `<div class="spell-box ${isRight ? 'correct' : 'wrong'}">${ch}</div>`;
+    return `<div class="spell-box ${isRight ? 'correct' : 'wrong'}">${typedCh || ''}</div>`;
   }).join('');
   document.getElementById('spellBoxes').innerHTML = boxHtml;
   const pct = Math.round((matchCount / correct.length) * 100);
