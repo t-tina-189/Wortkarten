@@ -273,6 +273,12 @@
       <label class="field-label">Meaning (English)</label>
       <input type="text" id="verbMeaningInput" placeholder="e.g. to run">
       <a class="ref-link" id="verbLingueeLink" href="https://www.linguee.com" target="_blank" rel="noopener">Look up on Linguee ↗</a>
+      <a class="ref-link" id="verbImportLink" href="#">Add file ↗</a>
+      <div class="upload-box" id="verbUploadBox" style="display:none; margin-top:8px;">
+        <div style="font-size:20px;">+</div>
+        <div class="hint">CSV with three columns — German, English, Level (A1–C1) — one verb per row.</div>
+        <input type="file" accept=".csv,text/csv" id="verbBankUpload">
+      </div>
       <label class="field-label" style="margin-top:1rem;">Difficulty</label>
       <div class="diff-row">
         <div class="vdiff-btn" data-d="1">★</div>
@@ -552,6 +558,7 @@ function getGloss(cleanToken, w, correctArt) {
 }
 
 const STAR_TEXT = { 1: '★', 2: '★★', 3: '★★★', 4: '★★★★', 5: '★★★★★' };
+const LEVEL_TO_STAR = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 5 };
 const LADDER_DAYS = [1, 3, 7, 14];
 const DAY_MS = 24 * 60 * 60 * 1000;
 function todayStr() { return new Date().toISOString().slice(0, 10); }
@@ -786,6 +793,55 @@ document.getElementById('wordInput').addEventListener('input', () => {
 document.getElementById('verbPreviewSpeak').addEventListener('click', () => {
   const w = document.getElementById('verbWordInput').value.trim();
   if (w) speak(w);
+});
+
+document.getElementById('verbImportLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  const box = document.getElementById('verbUploadBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+});
+
+function parseVerbImport(text) {
+  const rows = parseCSV(text);
+  const out = [];
+  rows.forEach((r, i) => {
+    if (r.length < 2) return;
+    const word = (r[0] || '').trim();
+    const meaning = (r[1] || '').trim();
+    const levelRaw = (r[2] || '').trim().toUpperCase();
+    if (i === 0 && word.toLowerCase() === 'german') return;
+    if (!word) return;
+    const difficulty = LEVEL_TO_STAR[levelRaw] || 3;
+    out.push({ word, meaning, difficulty });
+  });
+  return out;
+}
+
+document.getElementById('verbBankUpload').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  const rows = parseVerbImport(text);
+  const msgEl = document.getElementById('saveVerbMsg');
+  if (rows.length === 0) {
+    msgEl.className = 'msg err';
+    msgEl.textContent = 'Could not read any verbs from that file. Make sure German is column A, English column B, level column C.';
+    return;
+  }
+  const existing = new Set(words.filter(isVerb).map(w => w.word.trim().toLowerCase()));
+  let added = 0, skipped = 0;
+  for (const r of rows) {
+    const key = r.word.toLowerCase();
+    if (existing.has(key)) { skipped++; continue; }
+    existing.add(key);
+    const entry = { id: Date.now().toString() + '_' + added, type: 'verb', word: r.word, meaning: r.meaning, difficulty: r.difficulty, createdAt: new Date().toISOString() };
+    await dbPut('words', entry);
+    words.push(entry);
+    added++;
+  }
+  msgEl.className = 'msg ok';
+  msgEl.textContent = `Imported ${added} verb${added === 1 ? '' : 's'}${skipped ? ` (${skipped} skipped as duplicates)` : ''}.`;
+  document.getElementById('verbBankUpload').value = '';
 });
 
 let editingVerbId = null;
