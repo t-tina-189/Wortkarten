@@ -97,6 +97,23 @@
   .wb-word.wb-len-med { font-size: 11.5px; }
   .wb-word.wb-len-long { font-size: 10.5px; }
   .wb-meaning { font-size: 12.5px; color: #232220; cursor: pointer; line-height: 1.3; word-break: break-word; }
+
+  .verb-row { display: flex; align-items: center; gap: 10px; padding: 12px 4px; border-bottom: 1px solid #ECEBE2; }
+  .verb-row:last-child { border-bottom: none; }
+  .verb-row .vw-info { flex: 1; min-width: 0; cursor: pointer; }
+  .verb-row .vw-word { font-size: 14.5px; font-weight: 600; }
+  .verb-row .vw-meaning { font-size: 12.5px; color: #6B6A63; margin-top: 2px; cursor: pointer; }
+
+  .flash-card { background: #FFFFFF; border-radius: 16px; padding: 2.5rem 1.2rem; text-align: center; border: 1px solid #DEDDD3; margin-bottom: 1rem; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+  .flash-lang-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: #8A8980; margin-bottom: 10px; }
+  .flash-front { font-family: 'IBM Plex Serif', serif; font-size: 24px; font-weight: 600; }
+  .flash-back { font-family: 'IBM Plex Serif', serif; font-size: 20px; color: #185FA5; margin-top: 14px; padding-top: 14px; border-top: 1px solid #ECEBE2; width: 100%; }
+  .flash-hint { font-size: 12px; color: #8A8980; margin-top: 10px; }
+  .rate-row { display: flex; gap: 8px; }
+  .rate-btn { flex: 1; padding: 12px 4px; border-radius: 10px; border: 1.5px solid #DEDDD3; background: #FAF9F4; font-size: 12.5px; font-weight: 500; cursor: pointer; color: #232220; text-align: center; }
+  .rate-forget { border-color: #E24B4A; color: #791F1F; }
+  .rate-hard { border-color: #BA7517; color: #633806; }
+  .rate-easy { border-color: #639922; color: #27500A; }
   .del-btn { border: none; background: none; color: #8A8980; font-size: 18px; cursor: pointer; padding: 4px 6px; }
   .del-btn:hover { color: #C1443B; }
   .empty-state { text-align: center; padding: 2.5rem 1rem; color: #8A8980; font-size: 14px; }
@@ -210,10 +227,11 @@
       <p class="home-status" id="vocabStatusLine"></p>
     </div>
     <div class="menu-stack">
-      <div class="pill" data-go="add">New words</div>
+      <div class="pill" data-go="addchoice">New words</div>
       <div class="pill" data-go="practice">Article test<span class="due-badge" id="dueBadge"></span></div>
       <div class="pill" data-go="spelling">Spelling bee<span class="due-badge" id="spellDueBadge"></span></div>
-      <div class="pill" data-go="list">Word bank</div>
+      <div class="pill" data-go="flashcard">Flashcard<span class="due-badge" id="flashDueBadge"></span></div>
+      <div class="pill" data-go="bankchoice">Word bank</div>
       <div class="pill" data-go="stats">Stats</div>
     </div>
     <div class="settings-link" data-go="settings">Settings</div>
@@ -231,8 +249,32 @@
     <div class="settings-link" data-go="settings">Settings</div>
   </div>
 
-  <div class="screen" id="screen-add">
+  <div class="screen" id="screen-addchoice">
     <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
+    <div class="menu-stack">
+      <div class="pill" data-go="add">Noun</div>
+      <div class="pill" data-go="addverb">Verb</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-addverb">
+    <div class="back-row"><button class="back-btn" data-go="addchoice">← Back</button></div>
+    <div class="card">
+      <label class="field-label">Infinitive form</label>
+      <div class="word-row">
+        <input type="text" id="verbWordInput" placeholder="e.g. laufen">
+        <button class="speak-btn" id="verbPreviewSpeak" type="button">🔊</button>
+      </div>
+      <label class="field-label">Meaning (English)</label>
+      <input type="text" id="verbMeaningInput" placeholder="e.g. to run">
+      <a class="ref-link" id="verbLingueeLink" href="https://www.linguee.com" target="_blank" rel="noopener">Look up on Linguee ↗</a>
+      <button class="primary" id="saveVerbBtn" disabled style="margin-top:1rem;">Save verb</button>
+      <div class="msg" id="saveVerbMsg"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-add">
+    <div class="back-row"><button class="back-btn" data-go="addchoice">← Back</button></div>
     <div class="card">
       <label class="field-label">Photo</label>
       <div class="photo-input-area" id="photoArea">
@@ -281,19 +323,42 @@
     <div id="spellingArea"></div>
   </div>
 
+  <div class="screen" id="screen-flashcard">
+    <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
+    <div id="flashcardArea"></div>
+  </div>
+
   <div class="screen" id="screen-produce">
     <div class="back-row"><button class="back-btn" data-go="sentence-hub">← Back</button></div>
     <div id="produceArea"></div>
   </div>
 
-  <div class="screen" id="screen-list">
+  <div class="screen" id="screen-bankchoice">
     <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
+    <div class="menu-stack">
+      <div class="pill" data-go="list">Nouns</div>
+      <div class="pill" data-go="verblist">Verbs</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-list">
+    <div class="back-row"><button class="back-btn" data-go="bankchoice">← Back</button></div>
     <p class="list-count" id="listCount"></p>
     <div class="sort-row">
       <div class="sort-btn" data-sort="rarity">Sort: Rarity</div>
       <div class="sort-btn" data-sort="date">Sort: Newest</div>
     </div>
     <div class="card" id="listCard"><div class="empty-state">Loading…</div></div>
+  </div>
+
+  <div class="screen" id="screen-verblist">
+    <div class="back-row"><button class="back-btn" data-go="bankchoice">← Back</button></div>
+    <p class="list-count" id="verbListCount"></p>
+    <div class="sort-row">
+      <div class="sort-btn" data-vsort="alpha">Sort: Alphabetic</div>
+      <div class="sort-btn" data-vsort="date">Sort: Newest</div>
+    </div>
+    <div class="card" id="verbListCard"><div class="empty-state">Loading…</div></div>
   </div>
 
   <div class="screen" id="screen-stats">
@@ -366,6 +431,9 @@ const GENDER_LABEL = { masc: 'der', fem: 'die', neut: 'das' };
 const CASE_LIST = ['nom', 'akk', 'dat', 'gen'];
 const CASE_NAMES = { nom: 'Nominativ', akk: 'Akkusativ', dat: 'Dativ', gen: 'Genitiv' };
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function isNoun(w) { return !w.type || w.type === 'noun'; }
+function isVerb(w) { return w.type === 'verb'; }
+function germanDisplay(w) { return isNoun(w) ? `${GENDER_LABEL[w.gender]} ${w.word}` : w.word; }
 
 const CASE_TEMPLATES = {
   nom: [
@@ -545,8 +613,10 @@ let activeCases = ['nom', 'akk', 'dat', 'gen'];
 let pendingCases = ['nom', 'akk', 'dat', 'gen'];
 
 const BACK_MAP = {
-  'screen-add': 'vocab-hub', 'screen-practice': 'vocab-hub', 'screen-spelling': 'vocab-hub',
-  'screen-list': 'vocab-hub', 'screen-stats': 'vocab-hub',
+  'screen-addchoice': 'vocab-hub', 'screen-add': 'addchoice', 'screen-addverb': 'addchoice',
+  'screen-practice': 'vocab-hub', 'screen-spelling': 'vocab-hub', 'screen-flashcard': 'vocab-hub',
+  'screen-bankchoice': 'vocab-hub', 'screen-list': 'bankchoice', 'screen-verblist': 'bankchoice',
+  'screen-stats': 'vocab-hub',
   'screen-produce': 'sentence-hub', 'screen-stats-sentence': 'sentence-hub',
   'screen-vocab-hub': 'home', 'screen-sentence-hub': 'home', 'screen-settings': 'home'
 };
@@ -566,8 +636,10 @@ function showScreen(name) {
   if (name === 'vocab-hub') renderVocabHub();
   if (name === 'sentence-hub') renderSentenceHub();
   if (name === 'list') renderList();
+  if (name === 'verblist') renderVerbList();
   if (name === 'practice') startSession();
   if (name === 'spelling') startSpellingRound();
+  if (name === 'flashcard') startFlashcardRound();
   if (name === 'produce') renderProduce();
   if (name === 'stats') renderStats();
   if (name === 'stats-sentence') renderStatsSentence();
@@ -664,6 +736,15 @@ function renderVocabHub() {
   else if (spellDue.length > 0) { spellBadge.textContent = `${spellDue.length} due`; spellBadge.style.display = 'block'; }
   else if (spellDoneToday) { spellBadge.textContent = 'Completed'; spellBadge.style.display = 'block'; }
   else { spellBadge.style.display = 'none'; }
+
+  const flashPool = words.filter(w => w.meaning && w.meaning.trim().length > 0);
+  const flashDue = buildFlashcardQueue();
+  const flashBadge = document.getElementById('flashDueBadge');
+  const flashDoneToday = statsMeta && statsMeta.flashcardLastCompletedDate === todayStr();
+  if (flashPool.length === 0) { flashBadge.style.display = 'none'; }
+  else if (flashDue.length > 0) { flashBadge.textContent = `${flashDue.length} due`; flashBadge.style.display = 'block'; }
+  else if (flashDoneToday) { flashBadge.textContent = 'Completed'; flashBadge.style.display = 'block'; }
+  else { flashBadge.style.display = 'none'; }
 }
 
 function renderSentenceHub() {
@@ -687,6 +768,38 @@ document.getElementById('wordInput').addEventListener('input', () => {
   const w = document.getElementById('wordInput').value.trim();
   const link = document.getElementById('lingueeLink');
   link.href = w ? ('https://www.linguee.com/german-english/search?query=' + encodeURIComponent(w)) : 'https://www.linguee.com';
+});
+
+document.getElementById('verbPreviewSpeak').addEventListener('click', () => {
+  const w = document.getElementById('verbWordInput').value.trim();
+  if (w) speak(w);
+});
+
+function checkVerbSaveReady() {
+  const w = document.getElementById('verbWordInput').value.trim();
+  document.getElementById('saveVerbBtn').disabled = w.length === 0;
+}
+
+document.getElementById('verbWordInput').addEventListener('input', () => {
+  checkVerbSaveReady();
+  const w = document.getElementById('verbWordInput').value.trim();
+  const link = document.getElementById('verbLingueeLink');
+  link.href = w ? ('https://www.linguee.com/german-english/search?query=' + encodeURIComponent(w)) : 'https://www.linguee.com';
+});
+
+document.getElementById('saveVerbBtn').addEventListener('click', async () => {
+  const word = document.getElementById('verbWordInput').value.trim();
+  const meaning = document.getElementById('verbMeaningInput').value.trim();
+  const entry = { id: Date.now().toString(), type: 'verb', word, meaning, createdAt: new Date().toISOString() };
+  await dbPut('words', entry);
+  words.push(entry);
+  const msgEl = document.getElementById('saveVerbMsg');
+  msgEl.textContent = `Saved — ${word}`;
+  msgEl.className = 'msg ok';
+  document.getElementById('verbWordInput').value = '';
+  document.getElementById('verbMeaningInput').value = '';
+  document.getElementById('saveVerbBtn').disabled = true;
+  setTimeout(() => { msgEl.textContent = ''; }, 2500);
 });
 
 document.getElementById('photoInput').addEventListener('change', (e) => {
@@ -746,7 +859,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   const meaning = document.getElementById('meaningInput').value.trim();
   const cases = {};
   CASE_LIST.forEach(c => { cases[c] = newCaseState(); });
-  const entry = { id: Date.now().toString(), word, meaning, gender: selectedGender, difficulty: parseInt(selectedDiff, 10), photo: photoDataUrl, createdAt: new Date().toISOString(), cases };
+  const entry = { id: Date.now().toString(), type: 'noun', word, meaning, gender: selectedGender, difficulty: parseInt(selectedDiff, 10), photo: photoDataUrl, createdAt: new Date().toISOString(), cases };
   await dbPut('words', entry);
   words.push(entry);
   const msgEl = document.getElementById('saveMsg');
@@ -764,7 +877,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 
 let wordSortMode = 'date';
 
-document.querySelectorAll('.sort-btn').forEach(btn => {
+document.querySelectorAll('#screen-list .sort-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     wordSortMode = btn.dataset.sort;
     renderList();
@@ -772,7 +885,7 @@ document.querySelectorAll('.sort-btn').forEach(btn => {
 });
 
 function getSortedWords() {
-  const arr = [...words];
+  const arr = words.filter(isNoun);
   if (wordSortMode === 'rarity') arr.sort((a, b) => (b.difficulty || 0) - (a.difficulty || 0));
   else arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   return arr;
@@ -781,9 +894,10 @@ function getSortedWords() {
 function renderList() {
   const card = document.getElementById('listCard');
   const countEl = document.getElementById('listCount');
-  countEl.textContent = words.length === 0 ? '' : `${words.length} word${words.length === 1 ? '' : 's'} in your deck`;
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === wordSortMode));
-  if (words.length === 0) { card.innerHTML = '<div class="empty-state">No words yet. Add your first one from New words.</div>'; return; }
+  const nouns = words.filter(isNoun);
+  countEl.textContent = nouns.length === 0 ? '' : `${nouns.length} word${nouns.length === 1 ? '' : 's'} in your deck`;
+  document.querySelectorAll('#screen-list .sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === wordSortMode));
+  if (nouns.length === 0) { card.innerHTML = '<div class="empty-state">No nouns yet. Add your first one from New words.</div>'; return; }
 
   const sorted = getSortedWords();
   const cols = { masc: [], fem: [], neut: [] };
@@ -831,6 +945,60 @@ function renderList() {
   });
 }
 
+let verbSortMode = 'date';
+
+document.querySelectorAll('#screen-verblist .sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    verbSortMode = btn.dataset.vsort;
+    renderVerbList();
+  });
+});
+
+function renderVerbList() {
+  const card = document.getElementById('verbListCard');
+  const countEl = document.getElementById('verbListCount');
+  const verbs = words.filter(isVerb);
+  countEl.textContent = verbs.length === 0 ? '' : `${verbs.length} verb${verbs.length === 1 ? '' : 's'} in your deck`;
+  document.querySelectorAll('#screen-verblist .sort-btn').forEach(b => b.classList.toggle('active', b.dataset.vsort === verbSortMode));
+  if (verbs.length === 0) { card.innerHTML = '<div class="empty-state">No verbs yet. Add your first one from New words.</div>'; return; }
+
+  const sorted = [...verbs];
+  if (verbSortMode === 'alpha') sorted.sort((a, b) => a.word.localeCompare(b.word, 'de'));
+  else sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  card.innerHTML = sorted.map(w => `
+    <div class="verb-row">
+      <div class="vw-info" data-speak="${w.word}">
+        <div class="vw-word">${w.word} <span class="speak-inline">🔊</span></div>
+        <div class="vw-meaning" data-meaning-id="${w.id}">${w.meaning ? w.meaning : '— tap to add meaning'}</div>
+      </div>
+      <button class="del-btn" data-del="${w.id}">×</button>
+    </div>
+  `).join('');
+  card.querySelectorAll('[data-speak]').forEach(el => { el.addEventListener('click', () => speak(el.dataset.speak)); });
+  card.querySelectorAll('[data-meaning-id]').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = el.dataset.meaningId;
+      const wordObj = words.find(x => x.id === id);
+      const val = window.prompt('Meaning for ' + wordObj.word + ':', wordObj.meaning || '');
+      if (val !== null) {
+        wordObj.meaning = val.trim();
+        await dbPut('words', wordObj);
+        renderVerbList();
+      }
+    });
+  });
+  card.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await dbDelete('words', btn.dataset.del);
+      words = words.filter(w => w.id !== btn.dataset.del);
+      renderVerbList();
+    });
+  });
+}
+
 let sessionQueue = [], retryPool = [], currentItem = null;
 let currentFullSentence = '', currentEnSentence = '';
 let sessionStats = { total: 0, correct: 0, byWord: {}, byCase: {} };
@@ -838,7 +1006,7 @@ let sessionStats = { total: 0, correct: 0, byWord: {}, byCase: {} };
 function buildQueue() {
   const today = todayStr();
   const due = [];
-  words.forEach(w => { CASE_LIST.forEach(c => { if (activeCases.includes(c) && w.cases[c].nextDue <= today) due.push({ wordId: w.id, c }); }); });
+  words.forEach(w => { if (!isNoun(w)) return; CASE_LIST.forEach(c => { if (activeCases.includes(c) && w.cases[c].nextDue <= today) due.push({ wordId: w.id, c }); }); });
   for (let i = due.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [due[i], due[j]] = [due[j], due[i]]; }
   return due;
 }
@@ -1014,6 +1182,7 @@ function buildSpellQueue() {
   const today = todayStr();
   const due = [];
   words.forEach(w => {
+    if (!isNoun(w)) return;
     ensureSpellState(w);
     if (w.spelling.nextDue <= today) due.push(w.id);
   });
@@ -1147,6 +1316,112 @@ async function checkSpelling(w, selectedGender) {
   await dbPut('words', w);
   statsMeta.totalReviews = (statsMeta.totalReviews || 0) + 1;
   await dbPut('meta', statsMeta);
+}
+
+let flashQueue = [], flashRetryPool = [], currentFlashItem = null;
+
+function ensureFlashState(w) { if (!w.flashcard) w.flashcard = newCaseState(); }
+
+function buildFlashcardQueue() {
+  const today = todayStr();
+  const pool = words.filter(w => w.meaning && w.meaning.trim().length > 0);
+  const due = [];
+  pool.forEach(w => { ensureFlashState(w); if (w.flashcard.nextDue <= today) due.push(w.id); });
+  for (let i = due.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [due[i], due[j]] = [due[j], due[i]]; }
+  return due;
+}
+
+function startFlashcardRound() {
+  const pool = words.filter(w => w.meaning && w.meaning.trim().length > 0);
+  if (pool.length === 0) {
+    document.getElementById('flashcardArea').innerHTML = '<div class="card"><div class="empty-state">Add words or verbs with a saved meaning first, then come back to review them here.</div></div>';
+    return;
+  }
+  flashQueue = buildFlashcardQueue();
+  flashRetryPool = [];
+  nextFlashCard();
+}
+
+async function nextFlashCard() {
+  if (flashQueue.length === 0 && flashRetryPool.length > 0) { flashQueue = flashRetryPool; flashRetryPool = []; }
+  if (flashQueue.length === 0) {
+    const today = todayStr();
+    if (statsMeta.flashcardLastCompletedDate !== today) {
+      statsMeta.flashcardLastCompletedDate = today;
+      await dbPut('meta', statsMeta);
+    }
+    document.getElementById('flashcardArea').innerHTML = noDueMessageHTML();
+    return;
+  }
+  const id = flashQueue.shift();
+  currentFlashItem = words.find(w => w.id === id);
+  if (!currentFlashItem) { nextFlashCard(); return; }
+  renderFlashFront();
+}
+
+function renderFlashFront() {
+  const w = currentFlashItem;
+  const showGermanFirst = Math.random() < 0.5;
+  const frontText = showGermanFirst ? germanDisplay(w) : w.meaning;
+  const backText = showGermanFirst ? w.meaning : germanDisplay(w);
+  const remaining = flashQueue.length + flashRetryPool.length + 1;
+  const area = document.getElementById('flashcardArea');
+  area.innerHTML = `
+    <p class="list-count">${remaining} card${remaining === 1 ? '' : 's'} left today</p>
+    <div class="flash-card" id="flashCardEl">
+      <div class="flash-lang-tag">${showGermanFirst ? 'German' : 'English'}</div>
+      <div class="flash-front">${frontText}</div>
+      <div class="flash-hint">Tap to reveal</div>
+    </div>
+  `;
+  document.getElementById('flashCardEl').addEventListener('click', () => revealFlashBack(backText));
+}
+
+function revealFlashBack(backText) {
+  const cardEl = document.getElementById('flashCardEl');
+  cardEl.style.cursor = 'default';
+  cardEl.replaceWith(cardEl.cloneNode(true));
+  const fresh = document.getElementById('flashCardEl');
+  const hint = fresh.querySelector('.flash-hint');
+  if (hint) hint.remove();
+  fresh.insertAdjacentHTML('beforeend', `<div class="flash-back">${backText}</div>`);
+  document.getElementById('flashcardArea').insertAdjacentHTML('beforeend', `
+    <div class="rate-row" id="rateRow">
+      <div class="rate-btn rate-forget" data-rate="forget">Totally forgot</div>
+      <div class="rate-btn rate-hard" data-rate="hard">Took a while</div>
+      <div class="rate-btn rate-easy" data-rate="easy">Got it</div>
+    </div>
+  `);
+  document.querySelectorAll('#rateRow [data-rate]').forEach(btn => {
+    btn.addEventListener('click', () => rateFlashcard(btn.dataset.rate));
+  });
+}
+
+async function rateFlashcard(rating) {
+  const w = currentFlashItem;
+  ensureFlashState(w);
+  if (rating === 'easy') {
+    const { stage, days } = nextInterval(w.flashcard.stage);
+    w.flashcard.stage = stage;
+    w.flashcard.nextDue = new Date(Date.now() + days * DAY_MS).toISOString().slice(0, 10);
+  } else if (rating === 'hard') {
+    if (w.flashcard.stage < 0) {
+      w.flashcard.stage = 0;
+      w.flashcard.nextDue = new Date(Date.now() + LADDER_DAYS[0] * DAY_MS).toISOString().slice(0, 10);
+    } else {
+      const days = LADDER_DAYS[Math.min(w.flashcard.stage, LADDER_DAYS.length - 1)];
+      w.flashcard.nextDue = new Date(Date.now() + days * DAY_MS).toISOString().slice(0, 10);
+    }
+  } else {
+    w.flashcard.stage = -1;
+    w.flashcard.nextDue = todayStr();
+    flashRetryPool.push(w.id);
+    if (flashRetryPool.length >= 2) { const insertAt = Math.min(2, flashQueue.length); flashQueue.splice(insertAt, 0, flashRetryPool.shift()); }
+  }
+  await dbPut('words', w);
+  statsMeta.totalReviews = (statsMeta.totalReviews || 0) + 1;
+  await dbPut('meta', statsMeta);
+  nextFlashCard();
 }
 
 let sentenceBank = [];
