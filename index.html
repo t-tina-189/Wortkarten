@@ -57,6 +57,9 @@
   .diff-btn { background: #FAF9F4; font-size: 15px; color: #6B6A63; }
   .diff-btn.selected { border-color: #BA7517; background: #FAEEDA; color: #633806; }
   .diff-btn.tier4.selected { border-color: #BA7517; background: linear-gradient(135deg,#FAEEDA,#F5D98A); color: #4A2E02; font-weight: 600; }
+  .vdiff-btn { flex: 1; border-radius: 10px; border: 2px solid transparent; padding: 10px 2px; text-align: center; cursor: pointer; font-family: 'IBM Plex Sans'; background: #FAF9F4; font-size: 12.5px; color: #6B6A63; }
+  .vdiff-btn.selected { border-color: #BA7517; background: #FAEEDA; color: #633806; }
+  .vdiff-btn.tier5.selected { border-color: #BA7517; background: linear-gradient(135deg,#FAEEDA,#F5D98A); color: #4A2E02; font-weight: 600; }
   .case-btn { flex: 1; border-radius: 10px; border: 2px solid transparent; padding: 12px 4px; text-align: center; cursor: pointer; font-family: 'IBM Plex Sans'; background: #FAF9F4; font-size: 14px; color: #6B6A63; }
   .case-btn.selected { border-color: #185FA5; background: #E6F1FB; color: #0C447C; font-weight: 600; }
 
@@ -96,13 +99,15 @@
   .wb-word { font-size: 12.5px; font-weight: 600; line-height: 1.25; word-break: break-word; overflow-wrap: break-word; hyphens: auto; }
   .wb-word.wb-len-med { font-size: 11.5px; }
   .wb-word.wb-len-long { font-size: 10.5px; }
-  .wb-meaning { font-size: 12.5px; color: #232220; cursor: pointer; line-height: 1.3; word-break: break-word; }
+  .wb-meaning { font-size: 12.5px; color: #232220; line-height: 1.3; word-break: break-word; }
+  .wb-edit-area { cursor: pointer; }
 
   .verb-row { display: flex; align-items: center; gap: 10px; padding: 12px 4px; border-bottom: 1px solid #ECEBE2; }
   .verb-row:last-child { border-bottom: none; }
-  .verb-row .vw-info { flex: 1; min-width: 0; cursor: pointer; }
-  .verb-row .vw-word { font-size: 14.5px; font-weight: 600; }
-  .verb-row .vw-meaning { font-size: 12.5px; color: #6B6A63; margin-top: 2px; cursor: pointer; }
+  .verb-row .vw-word { font-size: 14.5px; font-weight: 600; flex-shrink: 0; max-width: 42%; word-break: break-word; }
+  .verb-row .vw-edit-area { flex: 1; min-width: 0; cursor: pointer; }
+  .verb-row .vw-meaning { font-size: 12.5px; color: #6B6A63; }
+  .verb-row .vw-stars { font-size: 11px; color: #BA7517; margin-top: 2px; }
 
   .flash-card { background: #FFFFFF; border-radius: 16px; padding: 2.5rem 1.2rem; text-align: center; border: 1px solid #DEDDD3; margin-bottom: 1rem; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
   .flash-lang-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: #8A8980; margin-bottom: 10px; }
@@ -252,13 +257,13 @@
   <div class="screen" id="screen-addchoice">
     <div class="back-row"><button class="back-btn" data-go="vocab-hub">← Back</button></div>
     <div class="menu-stack">
-      <div class="pill" data-go="add">Noun</div>
-      <div class="pill" data-go="addverb">Verb</div>
+      <div class="pill" id="goAddNoun">Noun</div>
+      <div class="pill" id="goAddVerb">Verb</div>
     </div>
   </div>
 
   <div class="screen" id="screen-addverb">
-    <div class="back-row"><button class="back-btn" data-go="addchoice">← Back</button></div>
+    <div class="back-row"><button class="back-btn" id="addVerbBackBtn" data-go="addchoice">← Back</button></div>
     <div class="card">
       <label class="field-label">Infinitive form</label>
       <div class="word-row">
@@ -268,13 +273,21 @@
       <label class="field-label">Meaning (English)</label>
       <input type="text" id="verbMeaningInput" placeholder="e.g. to run">
       <a class="ref-link" id="verbLingueeLink" href="https://www.linguee.com" target="_blank" rel="noopener">Look up on Linguee ↗</a>
-      <button class="primary" id="saveVerbBtn" disabled style="margin-top:1rem;">Save verb</button>
+      <label class="field-label" style="margin-top:1rem;">Difficulty</label>
+      <div class="diff-row">
+        <div class="vdiff-btn" data-d="1">★</div>
+        <div class="vdiff-btn" data-d="2">★★</div>
+        <div class="vdiff-btn" data-d="3">★★★</div>
+        <div class="vdiff-btn" data-d="4">★★★★</div>
+        <div class="vdiff-btn tier5" data-d="5">★★★★★</div>
+      </div>
+      <button class="primary" id="saveVerbBtn" disabled>Save verb</button>
       <div class="msg" id="saveVerbMsg"></div>
     </div>
   </div>
 
   <div class="screen" id="screen-add">
-    <div class="back-row"><button class="back-btn" data-go="addchoice">← Back</button></div>
+    <div class="back-row"><button class="back-btn" id="addNounBackBtn" data-go="addchoice">← Back</button></div>
     <div class="card">
       <label class="field-label">Photo</label>
       <div class="photo-input-area" id="photoArea">
@@ -538,7 +551,7 @@ function getGloss(cleanToken, w, correctArt) {
   return GLOSS[lower] || '—';
 }
 
-const STAR_TEXT = { 1: '★', 2: '★★', 3: '★★★', 4: '★★★★' };
+const STAR_TEXT = { 1: '★', 2: '★★', 3: '★★★', 4: '★★★★', 5: '★★★★★' };
 const LADDER_DAYS = [1, 3, 7, 14];
 const DAY_MS = 24 * 60 * 60 * 1000;
 function todayStr() { return new Date().toISOString().slice(0, 10); }
@@ -775,9 +788,47 @@ document.getElementById('verbPreviewSpeak').addEventListener('click', () => {
   if (w) speak(w);
 });
 
+let editingVerbId = null;
+let selectedVerbDiff = null;
+
+document.querySelectorAll('.vdiff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.vdiff-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedVerbDiff = btn.dataset.d;
+    checkVerbSaveReady();
+  });
+});
+
+function resetVerbForm() {
+  editingVerbId = null;
+  document.getElementById('verbWordInput').value = '';
+  document.getElementById('verbMeaningInput').value = '';
+  selectedVerbDiff = null;
+  document.querySelectorAll('.vdiff-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('saveVerbBtn').textContent = 'Save verb';
+  document.getElementById('saveVerbBtn').disabled = true;
+  document.getElementById('verbLingueeLink').href = 'https://www.linguee.com';
+  document.getElementById('saveVerbMsg').textContent = '';
+}
+
+function openEditVerb(w) {
+  editingVerbId = w.id;
+  document.getElementById('verbWordInput').value = w.word;
+  document.getElementById('verbMeaningInput').value = w.meaning || '';
+  selectedVerbDiff = w.difficulty ? String(w.difficulty) : null;
+  document.querySelectorAll('.vdiff-btn').forEach(b => b.classList.toggle('selected', b.dataset.d === selectedVerbDiff));
+  document.getElementById('saveVerbBtn').textContent = 'Update verb';
+  checkVerbSaveReady();
+  document.getElementById('verbLingueeLink').href = 'https://www.linguee.com/german-english/search?query=' + encodeURIComponent(w.word);
+  BACK_MAP['screen-addverb'] = 'verblist';
+  document.getElementById('addVerbBackBtn').dataset.go = 'verblist';
+  showScreen('addverb');
+}
+
 function checkVerbSaveReady() {
-  const w = document.getElementById('verbWordInput').value.trim();
-  document.getElementById('saveVerbBtn').disabled = w.length === 0;
+  const word = document.getElementById('verbWordInput').value.trim();
+  document.getElementById('saveVerbBtn').disabled = !(word.length > 0 && selectedVerbDiff);
 }
 
 document.getElementById('verbWordInput').addEventListener('input', () => {
@@ -790,15 +841,25 @@ document.getElementById('verbWordInput').addEventListener('input', () => {
 document.getElementById('saveVerbBtn').addEventListener('click', async () => {
   const word = document.getElementById('verbWordInput').value.trim();
   const meaning = document.getElementById('verbMeaningInput').value.trim();
-  const entry = { id: Date.now().toString(), type: 'verb', word, meaning, createdAt: new Date().toISOString() };
+  const msgEl = document.getElementById('saveVerbMsg');
+  const dup = words.some(w => isVerb(w) && w.id !== editingVerbId && w.word.trim().toLowerCase() === word.toLowerCase());
+  if (dup) { msgEl.className = 'msg err'; msgEl.textContent = 'This verb is already in your deck.'; return; }
+
+  if (editingVerbId) {
+    const existing = words.find(x => x.id === editingVerbId);
+    existing.word = word; existing.meaning = meaning; existing.difficulty = parseInt(selectedVerbDiff, 10);
+    await dbPut('words', existing);
+    resetVerbForm();
+    showScreen('verblist');
+    return;
+  }
+
+  const entry = { id: Date.now().toString(), type: 'verb', word, meaning, difficulty: parseInt(selectedVerbDiff, 10), createdAt: new Date().toISOString() };
   await dbPut('words', entry);
   words.push(entry);
-  const msgEl = document.getElementById('saveVerbMsg');
   msgEl.textContent = `Saved — ${word}`;
   msgEl.className = 'msg ok';
-  document.getElementById('verbWordInput').value = '';
-  document.getElementById('verbMeaningInput').value = '';
-  document.getElementById('saveVerbBtn').disabled = true;
+  resetVerbForm();
   setTimeout(() => { msgEl.textContent = ''; }, 2500);
 });
 
@@ -827,9 +888,57 @@ document.getElementById('photoInput').addEventListener('change', (e) => {
   reader.readAsDataURL(file);
 });
 
+let editingNounId = null;
 let selectedGender = null;
 let selectedDiff = null;
 let photoDataUrl = null;
+
+function resetNounForm() {
+  editingNounId = null;
+  document.getElementById('wordInput').value = '';
+  document.getElementById('meaningInput').value = '';
+  selectedGender = null; selectedDiff = null; photoDataUrl = null;
+  document.querySelectorAll('.gender-btn, #screen-add .diff-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('photoPlaceholder').style.display = 'block';
+  document.getElementById('saveBtn').textContent = 'Save word';
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('lingueeLink').href = 'https://www.linguee.com';
+  document.getElementById('saveMsg').textContent = '';
+}
+
+function openEditNoun(w) {
+  editingNounId = w.id;
+  document.getElementById('wordInput').value = w.word;
+  document.getElementById('meaningInput').value = w.meaning || '';
+  selectedGender = w.gender;
+  selectedDiff = String(w.difficulty);
+  photoDataUrl = w.photo;
+  document.getElementById('photoPreview').src = w.photo;
+  document.getElementById('photoPreview').style.display = 'block';
+  document.getElementById('photoPlaceholder').style.display = 'none';
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('selected', b.dataset.g === w.gender));
+  document.querySelectorAll('#screen-add .diff-btn').forEach(b => b.classList.toggle('selected', b.dataset.d === selectedDiff));
+  document.getElementById('saveBtn').textContent = 'Update word';
+  checkSaveReady();
+  document.getElementById('lingueeLink').href = 'https://www.linguee.com/german-english/search?query=' + encodeURIComponent(w.word);
+  BACK_MAP['screen-add'] = 'list';
+  document.getElementById('addNounBackBtn').dataset.go = 'list';
+  showScreen('add');
+}
+
+document.getElementById('goAddNoun').addEventListener('click', () => {
+  resetNounForm();
+  BACK_MAP['screen-add'] = 'addchoice';
+  document.getElementById('addNounBackBtn').dataset.go = 'addchoice';
+  showScreen('add');
+});
+document.getElementById('goAddVerb').addEventListener('click', () => {
+  resetVerbForm();
+  BACK_MAP['screen-addverb'] = 'addchoice';
+  document.getElementById('addVerbBackBtn').dataset.go = 'addchoice';
+  showScreen('addverb');
+});
 
 document.querySelectorAll('.gender-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -839,9 +948,9 @@ document.querySelectorAll('.gender-btn').forEach(btn => {
     checkSaveReady();
   });
 });
-document.querySelectorAll('.diff-btn').forEach(btn => {
+document.querySelectorAll('#screen-add .diff-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('#screen-add .diff-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedDiff = btn.dataset.d;
     checkSaveReady();
@@ -857,21 +966,28 @@ function checkSaveReady() {
 document.getElementById('saveBtn').addEventListener('click', async () => {
   const word = document.getElementById('wordInput').value.trim();
   const meaning = document.getElementById('meaningInput').value.trim();
+  const msgEl = document.getElementById('saveMsg');
+  const dup = words.some(w => isNoun(w) && w.id !== editingNounId && w.word.trim().toLowerCase() === word.toLowerCase());
+  if (dup) { msgEl.className = 'msg err'; msgEl.textContent = 'This word is already in your deck.'; return; }
+
+  if (editingNounId) {
+    const existing = words.find(x => x.id === editingNounId);
+    existing.word = word; existing.meaning = meaning; existing.gender = selectedGender;
+    existing.difficulty = parseInt(selectedDiff, 10); existing.photo = photoDataUrl;
+    await dbPut('words', existing);
+    resetNounForm();
+    showScreen('list');
+    return;
+  }
+
   const cases = {};
   CASE_LIST.forEach(c => { cases[c] = newCaseState(); });
   const entry = { id: Date.now().toString(), type: 'noun', word, meaning, gender: selectedGender, difficulty: parseInt(selectedDiff, 10), photo: photoDataUrl, createdAt: new Date().toISOString(), cases };
   await dbPut('words', entry);
   words.push(entry);
-  const msgEl = document.getElementById('saveMsg');
   msgEl.textContent = `Saved — ${GENDER_LABEL[selectedGender]} ${word}`;
   msgEl.className = 'msg ok';
-  document.getElementById('wordInput').value = '';
-  document.getElementById('meaningInput').value = '';
-  selectedGender = null; selectedDiff = null; photoDataUrl = null;
-  document.querySelectorAll('.gender-btn, .diff-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('photoPreview').style.display = 'none';
-  document.getElementById('photoPlaceholder').style.display = 'block';
-  document.getElementById('saveBtn').disabled = true;
+  resetNounForm();
   setTimeout(() => { msgEl.textContent = ''; }, 2500);
 });
 
@@ -910,8 +1026,10 @@ function renderList() {
         <span class="star-badge ${w.difficulty === 4 ? 'tier4' : ''}">${STAR_TEXT[w.difficulty] || ''}</span>
         <button class="wb-del" data-del="${w.id}">×</button>
       </div>
-      <div class="wb-word ${w.word.length > 13 ? 'wb-len-long' : w.word.length > 9 ? 'wb-len-med' : ''}" lang="de">${w.word}</div>
-      <div class="wb-meaning" data-meaning-id="${w.id}">${w.meaning ? w.meaning : '— tap to add meaning'}</div>
+      <div class="wb-edit-area" data-edit="${w.id}">
+        <div class="wb-word ${w.word.length > 13 ? 'wb-len-long' : w.word.length > 9 ? 'wb-len-med' : ''}" lang="de">${w.word}</div>
+        <div class="wb-meaning">${w.meaning ? w.meaning : '— tap to add meaning'}</div>
+      </div>
     </div>
   `;
 
@@ -922,17 +1040,11 @@ function renderList() {
   </div>`;
 
   card.querySelectorAll('[data-speak]').forEach(el => { el.addEventListener('click', () => speak(el.dataset.speak)); });
-  card.querySelectorAll('[data-meaning-id]').forEach(el => {
-    el.addEventListener('click', async (e) => {
+  card.querySelectorAll('[data-edit]').forEach(el => {
+    el.addEventListener('click', (e) => {
       e.stopPropagation();
-      const id = el.dataset.meaningId;
-      const wordObj = words.find(x => x.id === id);
-      const val = window.prompt('Meaning for ' + wordObj.word + ':', wordObj.meaning || '');
-      if (val !== null) {
-        wordObj.meaning = val.trim();
-        await dbPut('words', wordObj);
-        renderList();
-      }
+      const wordObj = words.find(x => x.id === el.dataset.edit);
+      if (wordObj) openEditNoun(wordObj);
     });
   });
   card.querySelectorAll('[data-del]').forEach(btn => {
@@ -968,25 +1080,20 @@ function renderVerbList() {
 
   card.innerHTML = sorted.map(w => `
     <div class="verb-row">
-      <div class="vw-info" data-speak="${w.word}">
-        <div class="vw-word">${w.word} <span class="speak-inline">🔊</span></div>
-        <div class="vw-meaning" data-meaning-id="${w.id}">${w.meaning ? w.meaning : '— tap to add meaning'}</div>
+      <div class="vw-word" data-speak="${w.word}">${w.word} <span class="speak-inline">🔊</span></div>
+      <div class="vw-edit-area" data-edit="${w.id}">
+        <div class="vw-meaning">${w.meaning ? w.meaning : '— tap to add meaning'}</div>
+        <div class="vw-stars">${STAR_TEXT[w.difficulty] || ''}</div>
       </div>
       <button class="del-btn" data-del="${w.id}">×</button>
     </div>
   `).join('');
   card.querySelectorAll('[data-speak]').forEach(el => { el.addEventListener('click', () => speak(el.dataset.speak)); });
-  card.querySelectorAll('[data-meaning-id]').forEach(el => {
-    el.addEventListener('click', async (e) => {
+  card.querySelectorAll('[data-edit]').forEach(el => {
+    el.addEventListener('click', (e) => {
       e.stopPropagation();
-      const id = el.dataset.meaningId;
-      const wordObj = words.find(x => x.id === id);
-      const val = window.prompt('Meaning for ' + wordObj.word + ':', wordObj.meaning || '');
-      if (val !== null) {
-        wordObj.meaning = val.trim();
-        await dbPut('words', wordObj);
-        renderVerbList();
-      }
+      const wordObj = words.find(x => x.id === el.dataset.edit);
+      if (wordObj) openEditVerb(wordObj);
     });
   });
   card.querySelectorAll('[data-del]').forEach(btn => {
