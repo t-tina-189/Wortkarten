@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1C1B19">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
 
@@ -276,8 +277,8 @@
       <a class="ref-link" id="verbImportLink" href="#">Add file ↗</a>
       <div class="upload-box" id="verbUploadBox" style="display:none; margin-top:8px;">
         <div style="font-size:20px;">+</div>
-        <div class="hint">CSV with three columns — German, English, Level (A1–C1) — one verb per row.</div>
-        <input type="file" accept=".csv,text/csv" id="verbBankUpload">
+        <div class="hint">CSV or .xlsx with three columns — German, English, Level (A1–C1) — one verb per row.</div>
+        <input type="file" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="verbBankUpload">
       </div>
       <label class="field-label" style="margin-top:1rem;">Difficulty</label>
       <div class="diff-row">
@@ -431,6 +432,15 @@
     <div class="card">
       <label class="field-label">Reference</label>
       <a class="ref-link" href="https://www.goethe.de/pro/relaunch/prf/de/A1_SD1_Wortliste_02.pdf" target="_blank" rel="noopener">Official Goethe A1 word list ↗</a>
+    </div>
+    <div class="card">
+      <label class="field-label">Reset by mode</label>
+      <button class="danger" id="resetNounsBtn">Reset nouns</button>
+      <div class="msg" id="resetNounsMsg"></div>
+      <button class="danger" id="resetVerbsBtn" style="margin-top:10px;">Reset verbs</button>
+      <div class="msg" id="resetVerbsMsg"></div>
+      <button class="danger" id="resetSentenceBtn" style="margin-top:10px;">Reset sentence bank</button>
+      <div class="msg" id="resetSentenceMsg"></div>
     </div>
     <div class="card">
       <label class="field-label">Danger zone</label>
@@ -719,6 +729,39 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
   }
 });
 
+function makeCategoryReset(btnId, msgId, confirmText, resetFn) {
+  let stage = 0;
+  document.getElementById(btnId).addEventListener('click', async () => {
+    const msg = document.getElementById(msgId);
+    stage++;
+    if (stage === 1) { msg.className = 'msg err'; msg.textContent = confirmText; }
+    else {
+      await resetFn();
+      stage = 0;
+      msg.className = 'msg ok';
+      msg.textContent = 'Done.';
+      setTimeout(() => { msg.textContent = ''; }, 2000);
+    }
+  });
+}
+
+makeCategoryReset('resetNounsBtn', 'resetNounsMsg', 'This deletes all nouns and their photos (not your stats or streak). Tap again to confirm.', async () => {
+  const ids = words.filter(isNoun).map(w => w.id);
+  for (const id of ids) await dbDelete('words', id);
+  words = words.filter(w => !isNoun(w));
+});
+
+makeCategoryReset('resetVerbsBtn', 'resetVerbsMsg', 'This deletes all verbs (not your stats or streak). Tap again to confirm.', async () => {
+  const ids = words.filter(isVerb).map(w => w.id);
+  for (const id of ids) await dbDelete('words', id);
+  words = words.filter(w => !isVerb(w));
+});
+
+makeCategoryReset('resetSentenceBtn', 'resetSentenceMsg', 'This deletes your uploaded sentence bank. Tap again to confirm.', async () => {
+  sentenceBank = [];
+  await dbDelete('meta', 'sentenceBank');
+});
+
 function noDueMessageHTML() {
   const name = userMeta ? userMeta.name : '';
   return `<div class="card"><div class="empty-state" style="text-align:center;">
@@ -801,8 +844,7 @@ document.getElementById('verbImportLink').addEventListener('click', (e) => {
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
 });
 
-function parseVerbImport(text) {
-  const rows = parseCSV(text);
+function parseVerbImport(rows) {
   const out = [];
   rows.forEach((r, i) => {
     if (r.length < 2) return;
@@ -820,9 +862,16 @@ function parseVerbImport(text) {
 document.getElementById('verbBankUpload').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  const text = await file.text();
-  const rows = parseVerbImport(text);
   const msgEl = document.getElementById('saveVerbMsg');
+  let fileRows;
+  try {
+    fileRows = await readFileAsRows(file);
+  } catch (err) {
+    msgEl.className = 'msg err';
+    msgEl.textContent = err.message;
+    return;
+  }
+  const rows = parseVerbImport(fileRows);
   if (rows.length === 0) {
     msgEl.className = 'msg err';
     msgEl.textContent = 'Could not read any verbs from that file. Make sure German is column A, English column B, level column C.';
@@ -1613,8 +1662,36 @@ function parseCSV(text) {
   return rows;
 }
 
-function parseSentenceBank(text) {
-  const rows = parseCSV(text);
+function looksBinary(text) {
+  if (text.startsWith('PK')) return true;
+  const sampleLen = Math.min(text.length, 2000);
+  let bad = 0;
+  for (let i = 0; i < sampleLen; i++) {
+    const c = text.charCodeAt(i);
+    if (c === 0 || (c < 32 && c !== 9 && c !== 10 && c !== 13)) bad++;
+  }
+  return sampleLen > 0 && bad / sampleLen > 0.05;
+}
+
+async function readFileAsRows(file) {
+  const name = (file.name || '').toLowerCase();
+  const isXlsx = name.endsWith('.xlsx') || (file.type || '').includes('spreadsheetml');
+  if (isXlsx) {
+    if (typeof XLSX === 'undefined') throw new Error('Could not load the Excel reader. Check your connection and try again, or use a .csv file instead.');
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    return rows.map(r => r.map(cell => (cell === null || cell === undefined) ? '' : String(cell)));
+  }
+  const text = await file.text();
+  if (looksBinary(text)) {
+    throw new Error('This file looks like an Excel or other binary file, not plain CSV text. Try uploading it as .xlsx instead, or re-save it as .csv.');
+  }
+  return parseCSV(text);
+}
+
+function parseSentenceBank(rows) {
   const pairs = [];
   rows.forEach((r, i) => {
     if (r.length < 2) return;
@@ -1675,8 +1752,8 @@ function renderProduce() {
         <label class="field-label">Upload your sentence bank</label>
         <div class="upload-box">
           <div style="font-size:24px;">+</div>
-          <div class="hint">Upload a CSV with two columns — English, German — one sentence pair per row.</div>
-          <input type="file" accept=".csv,text/csv" id="bankUpload">
+          <div class="hint">Upload a CSV or .xlsx with two columns — English, German — one sentence pair per row.</div>
+          <input type="file" accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="bankUpload">
         </div>
       </div>
     `;
@@ -1691,10 +1768,16 @@ function renderProduce() {
 async function handleBankUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
-  const text = await file.text();
-  const pairs = parseSentenceBank(text);
+  const area = document.getElementById('produceArea');
+  let rows;
+  try {
+    rows = await readFileAsRows(file);
+  } catch (err) {
+    area.innerHTML = `<div class="card"><div class="empty-state">${err.message}</div></div>`;
+    return;
+  }
+  const pairs = parseSentenceBank(rows);
   if (pairs.length === 0) {
-    const area = document.getElementById('produceArea');
     area.innerHTML = '<div class="card"><div class="empty-state">Could not read any sentence pairs from that file. Make sure it has English in column A and German in column B.</div></div>';
     return;
   }
